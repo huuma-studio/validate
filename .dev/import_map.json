@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "cargo/": "https://deno.land/x/cargo@0.1.63/",
+    "std/": "https://deno.land/std@0.210.0/"
+  }
+}

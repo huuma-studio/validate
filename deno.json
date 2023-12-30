@@ -1,0 +1,6 @@
+{
+  "importMap": "./.dev/import_map.json",
+  "tasks": {
+    "check": "deno check src/**/*.ts"
+  }
+}
