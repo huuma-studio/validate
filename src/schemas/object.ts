@@ -4,52 +4,80 @@ import {
   required,
   Schema,
   ValidationError,
+  Validation,
 } from "../schema.ts";
 
 interface Keyable {
   [key: string]: unknown;
 }
 
-interface KeyableSchema {
-  [key: string]: Schema<unknown>;
-}
-
-type SchemaType<T extends KeyableSchema> = {
-  [P in keyof T]: T[P]["type"];
+type KeyableSchema<T> = {
+  [P in keyof T]: T[P] extends Schema<infer U> ? T[P] : never;
 };
 
-export class ObjectSchema<T extends KeyableSchema>
-  extends BaseSchema<SchemaType<T>> {
-  constructor(private schema: T) {
+type SchemaType<T> = {
+  [P in keyof T]: T[P] extends Schema<infer U> ? T[P]["type"] : never;
+};
+
+export class ObjectSchema<
+  T extends KeyableSchema<T | undefined>,
+> extends BaseSchema<SchemaType<T>> {
+  constructor(
+    private schema: T extends KeyableSchema<T extends undefined ? never : T>
+      ? T
+      : never,
+  ) {
     super();
     this.validator(required("object")).validator(isObject);
   }
 
-  validate(toValidate: unknown, key?: string) {
-    const errors: ValidationError[] = [];
+  required(): ObjectSchema<T> {
+    this.property.isRequired = true;
+    return this;
+  }
 
+  optional(): ObjectSchema<T | undefined> {
+    this.property.isRequired = false;
+    return <ObjectSchema<T | undefined>>this;
+  }
+
+  validate(toValidate: unknown, key?: string): Validation<SchemaType<T>> {
+    const errors: ValidationError[] = [];
+    const schemaType: Record<string, unknown> = {};
     if (this.property.isRequired || isDefined(toValidate)) {
       for (const validator of this.property.validators) {
         const result = validator(toValidate, key);
         if (result) errors.push(result);
       }
       for (const key in this.schema) {
-        const toPush = isDefined(toValidate) && typeof toValidate !== "function"
-          ? (<Keyable> toValidate)[key]
-          : undefined;
-        errors.push(...this.schema[key].validate(toPush, key).errors);
+        const toPush =
+          isDefined(toValidate) && typeof toValidate !== "function"
+            ? (<Keyable>toValidate)[key]
+            : undefined;
+
+        const { value, errors: validationErrors } = this.schema[key].validate(
+          toPush,
+          key,
+        );
+
+        if (validationErrors?.length) {
+          errors.push(...validationErrors);
+          continue;
+        }
+        schemaType[key] = value;
       }
+    }
+    if (errors.length) {
+      return {
+        value: undefined,
+        errors,
+      };
     }
 
     return {
-      value: <SchemaType<T>> toValidate,
-      errors,
+      value: <SchemaType<T>>schemaType,
+      errors: undefined,
     };
-  }
-
-  required(): this {
-    this.property.isRequired = true;
-    return this;
   }
 }
 

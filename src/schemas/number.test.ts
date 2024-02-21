@@ -1,4 +1,5 @@
-import { assertArrayIncludes, assertEquals } from "std/testing/asserts.ts";
+import { assertEquals } from "std/assert/assert_equals.ts";
+import { assertArrayIncludes } from "std/assert/assert_array_includes.ts";
 import { NumberSchema } from "../schemas/number.ts";
 
 const requiredMessage = {
@@ -23,109 +24,109 @@ const isNotMaximumMessage = {
 Deno.test("Number Schema Validation: 'isNumber'", () => {
   const isNumber = new NumberSchema();
 
-  assertArrayIncludes(isNumber.validate(undefined).errors, [requiredMessage]);
-  assertArrayIncludes(isNumber.validate(null).errors, [requiredMessage]);
+  assertArrayIncludes(isNumber.validate(undefined).errors!, [requiredMessage]);
+  assertArrayIncludes(isNumber.validate(null).errors!, [requiredMessage]);
 
-  assertArrayIncludes(isNumber.validate("").errors, [notNumberMessage]);
-  assertArrayIncludes(isNumber.validate("Cargo").errors, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate("").errors!, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate("Cargo").errors!, [notNumberMessage]);
 
-  assertEquals(isNumber.validate(-1).errors, []);
-  assertEquals(isNumber.validate(0).errors, []);
-  assertEquals(isNumber.validate(1).errors, []);
+  assertEquals(isNumber.validate(-1).errors, undefined);
+  assertEquals(isNumber.validate(0).errors, undefined);
+  assertEquals(isNumber.validate(1).errors, undefined);
 
-  assertArrayIncludes(isNumber.validate(NaN).errors, [notNumberMessage]);
-  assertArrayIncludes(isNumber.validate(Infinity).errors, [notNumberMessage]);
-  assertArrayIncludes(isNumber.validate(-Infinity).errors, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate(NaN).errors!, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate(Infinity).errors!, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate(-Infinity).errors!, [notNumberMessage]);
 
-  assertArrayIncludes(isNumber.validate(true).errors, [notNumberMessage]);
-  assertArrayIncludes(isNumber.validate(false).errors, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate(true).errors!, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate(false).errors!, [notNumberMessage]);
 
-  assertArrayIncludes(isNumber.validate({}).errors, [notNumberMessage]);
-  assertArrayIncludes(isNumber.validate([]).errors, [notNumberMessage]);
-  assertArrayIncludes(isNumber.validate(() => {}).errors, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate({}).errors!, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate([]).errors!, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate(() => {}).errors!, [notNumberMessage]);
 });
 
 Deno.test("Number Schema Validation: 'required'", () => {
   const required = new NumberSchema().optional().required();
 
-  assertArrayIncludes(required.validate(undefined).errors, [requiredMessage]);
-  assertArrayIncludes(required.validate(null).errors, [requiredMessage]);
+  assertArrayIncludes(required.validate(undefined).errors!, [requiredMessage]);
+  assertArrayIncludes(required.validate(null).errors!, [requiredMessage]);
 
-  assertArrayIncludes(required.validate("").errors, [notNumberMessage]);
-  assertArrayIncludes(required.validate("Cargo").errors, [notNumberMessage]);
+  assertArrayIncludes(required.validate("").errors!, [notNumberMessage]);
+  assertArrayIncludes(required.validate("Cargo").errors!, [notNumberMessage]);
 
-  assertEquals(required.validate(-1).errors, []);
-  assertEquals(required.validate(0).errors, []);
-  assertEquals(required.validate(1).errors, []);
+  assertEquals(required.validate(-1).errors, undefined);
+  assertEquals(required.validate(0).errors, undefined);
+  assertEquals(required.validate(1).errors, undefined);
 
-  assertArrayIncludes(required.validate(NaN).errors, [notNumberMessage]);
-  assertArrayIncludes(required.validate(Infinity).errors, [notNumberMessage]);
-  assertArrayIncludes(required.validate(-Infinity).errors, [notNumberMessage]);
+  assertArrayIncludes(required.validate(NaN).errors!, [notNumberMessage]);
+  assertArrayIncludes(required.validate(Infinity).errors!, [notNumberMessage]);
+  assertArrayIncludes(required.validate(-Infinity).errors!, [notNumberMessage]);
 
-  assertArrayIncludes(required.validate(true).errors, [notNumberMessage]);
-  assertArrayIncludes(required.validate(false).errors, [notNumberMessage]);
+  assertArrayIncludes(required.validate(true).errors!, [notNumberMessage]);
+  assertArrayIncludes(required.validate(false).errors!, [notNumberMessage]);
 
-  assertArrayIncludes(required.validate({}).errors, [notNumberMessage]);
-  assertArrayIncludes(required.validate([]).errors, [notNumberMessage]);
-  assertArrayIncludes(required.validate(() => {}).errors, [notNumberMessage]);
+  assertArrayIncludes(required.validate({}).errors!, [notNumberMessage]);
+  assertArrayIncludes(required.validate([]).errors!, [notNumberMessage]);
+  assertArrayIncludes(required.validate(() => {}).errors!, [notNumberMessage]);
 });
 
 Deno.test("Number Schema Validation: 'optional'", () => {
   const optional = new NumberSchema().optional();
 
-  assertEquals(optional.validate(undefined).errors, []);
-  assertEquals(optional.validate(null).errors, []);
+  assertEquals(optional.validate(undefined).errors, undefined);
+  assertEquals(optional.validate(null).errors, undefined);
 
-  assertArrayIncludes(optional.validate("").errors, [notNumberMessage]);
-  assertArrayIncludes(optional.validate("Cargo").errors, [notNumberMessage]);
+  assertArrayIncludes(optional.validate("").errors!, [notNumberMessage]);
+  assertArrayIncludes(optional.validate("Cargo").errors!, [notNumberMessage]);
 
-  assertEquals(optional.validate(-1).errors, []);
-  assertEquals(optional.validate(0).errors, []);
-  assertEquals(optional.validate(1).errors, []);
+  assertEquals(optional.validate(-1).errors, undefined);
+  assertEquals(optional.validate(0).errors, undefined);
+  assertEquals(optional.validate(1).errors, undefined);
 
-  assertArrayIncludes(optional.validate(NaN).errors, [notNumberMessage]);
-  assertArrayIncludes(optional.validate(Infinity).errors, [notNumberMessage]);
-  assertArrayIncludes(optional.validate(-Infinity).errors, [notNumberMessage]);
+  assertArrayIncludes(optional.validate(NaN).errors!, [notNumberMessage]);
+  assertArrayIncludes(optional.validate(Infinity).errors!, [notNumberMessage]);
+  assertArrayIncludes(optional.validate(-Infinity).errors!, [notNumberMessage]);
 
-  assertArrayIncludes(optional.validate(true).errors, [notNumberMessage]);
-  assertArrayIncludes(optional.validate(false).errors, [notNumberMessage]);
+  assertArrayIncludes(optional.validate(true).errors!, [notNumberMessage]);
+  assertArrayIncludes(optional.validate(false).errors!, [notNumberMessage]);
 
-  assertArrayIncludes(optional.validate({}).errors, [notNumberMessage]);
-  assertArrayIncludes(optional.validate([]).errors, [notNumberMessage]);
-  assertArrayIncludes(optional.validate(() => {}).errors, [notNumberMessage]);
+  assertArrayIncludes(optional.validate({}).errors!, [notNumberMessage]);
+  assertArrayIncludes(optional.validate([]).errors!, [notNumberMessage]);
+  assertArrayIncludes(optional.validate(() => {}).errors!, [notNumberMessage]);
 });
 
 Deno.test("Number Schema Validation: 'positive'", () => {
   const positive = new NumberSchema().positive();
 
-  assertArrayIncludes(positive.validate(undefined).errors, [
+  assertArrayIncludes(positive.validate(undefined).errors!, [
     isNotPositiveMessage,
   ]);
-  assertArrayIncludes(positive.validate(null).errors, [isNotPositiveMessage]);
+  assertArrayIncludes(positive.validate(null).errors!, [isNotPositiveMessage]);
 
-  assertArrayIncludes(positive.validate("").errors, [isNotPositiveMessage]);
-  assertArrayIncludes(positive.validate("Cargo").errors, [
-    isNotPositiveMessage,
-  ]);
-
-  assertArrayIncludes(positive.validate(-1).errors, [isNotPositiveMessage]);
-  assertArrayIncludes(positive.validate(0).errors, [isNotPositiveMessage]);
-  assertEquals(positive.validate(1).errors, []);
-
-  assertArrayIncludes(positive.validate(NaN).errors, [isNotPositiveMessage]);
-  assertArrayIncludes(positive.validate(Infinity).errors, [
-    isNotPositiveMessage,
-  ]);
-  assertArrayIncludes(positive.validate(-Infinity).errors, [
+  assertArrayIncludes(positive.validate("").errors!, [isNotPositiveMessage]);
+  assertArrayIncludes(positive.validate("Cargo").errors!, [
     isNotPositiveMessage,
   ]);
 
-  assertArrayIncludes(positive.validate(true).errors, [isNotPositiveMessage]);
-  assertArrayIncludes(positive.validate(false).errors, [isNotPositiveMessage]);
+  assertArrayIncludes(positive.validate(-1).errors!, [isNotPositiveMessage]);
+  assertArrayIncludes(positive.validate(0).errors!, [isNotPositiveMessage]);
+  assertEquals(positive.validate(1).errors, undefined);
 
-  assertArrayIncludes(positive.validate({}).errors, [isNotPositiveMessage]);
-  assertArrayIncludes(positive.validate([]).errors, [isNotPositiveMessage]);
-  assertArrayIncludes(positive.validate(() => {}).errors, [
+  assertArrayIncludes(positive.validate(NaN).errors!, [isNotPositiveMessage]);
+  assertArrayIncludes(positive.validate(Infinity).errors!, [
+    isNotPositiveMessage,
+  ]);
+  assertArrayIncludes(positive.validate(-Infinity).errors!, [
+    isNotPositiveMessage,
+  ]);
+
+  assertArrayIncludes(positive.validate(true).errors!, [isNotPositiveMessage]);
+  assertArrayIncludes(positive.validate(false).errors!, [isNotPositiveMessage]);
+
+  assertArrayIncludes(positive.validate({}).errors!, [isNotPositiveMessage]);
+  assertArrayIncludes(positive.validate([]).errors!, [isNotPositiveMessage]);
+  assertArrayIncludes(positive.validate(() => {}).errors!, [
     isNotPositiveMessage,
   ]);
 });
@@ -133,34 +134,34 @@ Deno.test("Number Schema Validation: 'positive'", () => {
 Deno.test("Number Schema Validation: 'negative'", () => {
   const negative = new NumberSchema().negative();
 
-  assertArrayIncludes(negative.validate(undefined).errors, [
+  assertArrayIncludes(negative.validate(undefined).errors!, [
     isNotNegativeMessage,
   ]);
-  assertArrayIncludes(negative.validate(null).errors, [isNotNegativeMessage]);
+  assertArrayIncludes(negative.validate(null).errors!, [isNotNegativeMessage]);
 
-  assertArrayIncludes(negative.validate("").errors, [isNotNegativeMessage]);
-  assertArrayIncludes(negative.validate("Cargo").errors, [
-    isNotNegativeMessage,
-  ]);
-
-  assertEquals(negative.validate(-1).errors, []);
-  assertArrayIncludes(negative.validate(0).errors, [isNotNegativeMessage]);
-  assertArrayIncludes(negative.validate(1).errors, [isNotNegativeMessage]);
-
-  assertArrayIncludes(negative.validate(NaN).errors, [isNotNegativeMessage]);
-  assertArrayIncludes(negative.validate(Infinity).errors, [
-    isNotNegativeMessage,
-  ]);
-  assertArrayIncludes(negative.validate(-Infinity).errors, [
+  assertArrayIncludes(negative.validate("").errors!, [isNotNegativeMessage]);
+  assertArrayIncludes(negative.validate("Cargo").errors!, [
     isNotNegativeMessage,
   ]);
 
-  assertArrayIncludes(negative.validate(true).errors, [isNotNegativeMessage]);
-  assertArrayIncludes(negative.validate(false).errors, [isNotNegativeMessage]);
+  assertEquals(negative.validate(-1).errors, undefined);
+  assertArrayIncludes(negative.validate(0).errors!, [isNotNegativeMessage]);
+  assertArrayIncludes(negative.validate(1).errors!, [isNotNegativeMessage]);
 
-  assertArrayIncludes(negative.validate({}).errors, [isNotNegativeMessage]);
-  assertArrayIncludes(negative.validate([]).errors, [isNotNegativeMessage]);
-  assertArrayIncludes(negative.validate(() => {}).errors, [
+  assertArrayIncludes(negative.validate(NaN).errors!, [isNotNegativeMessage]);
+  assertArrayIncludes(negative.validate(Infinity).errors!, [
+    isNotNegativeMessage,
+  ]);
+  assertArrayIncludes(negative.validate(-Infinity).errors!, [
+    isNotNegativeMessage,
+  ]);
+
+  assertArrayIncludes(negative.validate(true).errors!, [isNotNegativeMessage]);
+  assertArrayIncludes(negative.validate(false).errors!, [isNotNegativeMessage]);
+
+  assertArrayIncludes(negative.validate({}).errors!, [isNotNegativeMessage]);
+  assertArrayIncludes(negative.validate([]).errors!, [isNotNegativeMessage]);
+  assertArrayIncludes(negative.validate(() => {}).errors!, [
     isNotNegativeMessage,
   ]);
 });
@@ -168,57 +169,57 @@ Deno.test("Number Schema Validation: 'negative'", () => {
 Deno.test("Number Schema Validation: 'min'", () => {
   const min = new NumberSchema().min(10);
 
-  assertArrayIncludes(min.validate(undefined).errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate(null).errors, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(undefined).errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(null).errors!, [isNotMinimumMessage]);
 
-  assertArrayIncludes(min.validate("").errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate("Cargo").errors, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate("").errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate("Cargo").errors!, [isNotMinimumMessage]);
 
-  assertEquals(min.validate(11).errors, []);
-  assertEquals(min.validate(10).errors, []);
-  assertArrayIncludes(min.validate(9).errors, [isNotMinimumMessage]);
+  assertEquals(min.validate(11).errors, undefined);
+  assertEquals(min.validate(10).errors, undefined);
+  assertArrayIncludes(min.validate(9).errors!, [isNotMinimumMessage]);
 
-  assertArrayIncludes(min.validate(-1).errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate(0).errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate(1).errors, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(-1).errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(0).errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(1).errors!, [isNotMinimumMessage]);
 
-  assertArrayIncludes(min.validate(NaN).errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate(Infinity).errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate(-Infinity).errors, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(NaN).errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(Infinity).errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(-Infinity).errors!, [isNotMinimumMessage]);
 
-  assertArrayIncludes(min.validate(true).errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate(false).errors, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(true).errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(false).errors!, [isNotMinimumMessage]);
 
-  assertArrayIncludes(min.validate({}).errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate([]).errors, [isNotMinimumMessage]);
-  assertArrayIncludes(min.validate(() => {}).errors, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate({}).errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate([]).errors!, [isNotMinimumMessage]);
+  assertArrayIncludes(min.validate(() => {}).errors!, [isNotMinimumMessage]);
 });
 
 Deno.test("Number Schema Validation: 'max'", () => {
   const max = new NumberSchema().max(10);
 
-  assertArrayIncludes(max.validate(undefined).errors, [isNotMaximumMessage]);
-  assertArrayIncludes(max.validate(null).errors, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate(undefined).errors!, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate(null).errors!, [isNotMaximumMessage]);
 
-  assertArrayIncludes(max.validate("").errors, [isNotMaximumMessage]);
-  assertArrayIncludes(max.validate("Cargo").errors, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate("").errors!, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate("Cargo").errors!, [isNotMaximumMessage]);
 
-  assertEquals(max.validate(9).errors, []);
-  assertEquals(max.validate(10).errors, []);
-  assertArrayIncludes(max.validate(11).errors, [isNotMaximumMessage]);
+  assertEquals(max.validate(9).errors, undefined);
+  assertEquals(max.validate(10).errors, undefined);
+  assertArrayIncludes(max.validate(11).errors!, [isNotMaximumMessage]);
 
-  assertEquals(max.validate(-1).errors, []);
-  assertEquals(max.validate(0).errors, []);
-  assertEquals(max.validate(1).errors, []);
+  assertEquals(max.validate(-1).errors, undefined);
+  assertEquals(max.validate(0).errors, undefined);
+  assertEquals(max.validate(1).errors, undefined);
 
-  assertArrayIncludes(max.validate(NaN).errors, [isNotMaximumMessage]);
-  assertArrayIncludes(max.validate(Infinity).errors, [isNotMaximumMessage]);
-  assertArrayIncludes(max.validate(-Infinity).errors, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate(NaN).errors!, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate(Infinity).errors!, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate(-Infinity).errors!, [isNotMaximumMessage]);
 
-  assertArrayIncludes(max.validate(true).errors, [isNotMaximumMessage]);
-  assertArrayIncludes(max.validate(false).errors, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate(true).errors!, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate(false).errors!, [isNotMaximumMessage]);
 
-  assertArrayIncludes(max.validate({}).errors, [isNotMaximumMessage]);
-  assertArrayIncludes(max.validate([]).errors, [isNotMaximumMessage]);
-  assertArrayIncludes(max.validate(() => {}).errors, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate({}).errors!, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate([]).errors!, [isNotMaximumMessage]);
+  assertArrayIncludes(max.validate(() => {}).errors!, [isNotMaximumMessage]);
 });

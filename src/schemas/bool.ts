@@ -1,6 +1,15 @@
-import { PrimitiveSchema, ValidationError } from "../schema.ts";
+import {
+  PrimitiveSchema,
+  ValidationError,
+  RequiredType,
+  OptionalType,
+} from "../schema.ts";
 
-export class BooleanSchema extends PrimitiveSchema<boolean> {
+export class BooleanSchema<T = boolean> extends PrimitiveSchema<
+  T,
+  BooleanSchema<RequiredType<T>>,
+  BooleanSchema<OptionalType<T>>
+> {
   constructor() {
     super("boolean");
     this.validator(isBoolean);

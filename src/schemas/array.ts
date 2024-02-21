@@ -7,14 +7,28 @@ import {
   ValidationError,
 } from "../schema.ts";
 
-export class ArraySchema<T extends Schema<unknown>>
-  extends BaseSchema<T["type"][]> {
-  constructor(private schema: T) {
+export class ArraySchema<
+  T extends Schema<unknown> | undefined,
+> extends BaseSchema<T extends Schema<unknown> ? T["type"][] : undefined> {
+  constructor(private schema: T extends undefined ? never : T) {
     super();
     this.validator(required("array")).validator(isArray);
   }
 
-  validate(toValidate: unknown, key?: string): Validation<T["type"][]> {
+  required() {
+    this.property.isRequired = true;
+    return <ArraySchema<T>> this;
+  }
+
+  optional() {
+    this.property.isRequired = false;
+    return <ArraySchema<T | undefined>> this;
+  }
+
+  validate(
+    toValidate: unknown,
+    key?: string,
+  ): Validation<T extends Schema<unknown> ? T["type"][] : undefined> {
     const errors: ValidationError[] = [];
 
     if (this.property.isRequired || isDefined(toValidate)) {
@@ -30,23 +44,28 @@ export class ArraySchema<T extends Schema<unknown>>
             toValidate.entries()
           )
         ) {
-          errors.push(
-            ...this.schema.validate(entry, `array index ${index.toString()}`)
-              .errors,
-          );
+          const validationErrors = this.schema.validate(
+            entry,
+            `array index ${index.toString()}`,
+          ).errors;
+          if (validationErrors?.length) {
+            errors.push(...validationErrors);
+          }
         }
       }
     }
 
-    return {
-      value: <T["type"][]> toValidate,
-      errors,
-    };
-  }
+    if (errors.length) {
+      return {
+        value: undefined,
+        errors,
+      };
+    }
 
-  required(): this {
-    this.property.isRequired = true;
-    return this;
+    return {
+      value: <T extends Schema<unknown> ? T["type"][] : undefined> toValidate,
+      errors: undefined,
+    };
   }
 }
 

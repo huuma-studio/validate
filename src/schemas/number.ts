@@ -1,6 +1,16 @@
-import { PrimitiveSchema, ValidationError, Validator } from "../schema.ts";
+import {
+  PrimitiveSchema,
+  ValidationError,
+  Validator,
+  RequiredType,
+  OptionalType,
+} from "../schema.ts";
 
-export class NumberSchema extends PrimitiveSchema<number> {
+export class NumberSchema<T = number> extends PrimitiveSchema<
+  T,
+  NumberSchema<RequiredType<T>>,
+  NumberSchema<OptionalType<T>>
+> {
   constructor() {
     super("number");
     this.property.validators.push(isNumber);
@@ -46,7 +56,7 @@ function isNumber(value: unknown, key?: string): ValidationError | undefined {
 }
 
 function isPositive(value: unknown, key?: string): ValidationError | undefined {
-  if (isFiniteNumber(value) && <number> value >= 1) {
+  if (isFiniteNumber(value) && <number>value >= 1) {
     return;
   }
   return {
@@ -55,7 +65,7 @@ function isPositive(value: unknown, key?: string): ValidationError | undefined {
 }
 
 function isNegative(value: unknown, key?: string): ValidationError | undefined {
-  if (isFiniteNumber(value) && <number> value < 0) {
+  if (isFiniteNumber(value) && <number>value < 0) {
     return;
   }
   return {
@@ -76,7 +86,7 @@ function isEquals(to: number): Validator {
 
 function isMin(is: number): Validator {
   return (value: unknown, key?: string) => {
-    if (isFiniteNumber(value) && <number> value >= is) {
+    if (isFiniteNumber(value) && <number>value >= is) {
       return;
     }
     return {
@@ -87,7 +97,7 @@ function isMin(is: number): Validator {
 
 function isMax(is: number): Validator {
   return (value: unknown, key?: string) => {
-    if (isFiniteNumber(value) && <number> value <= is) {
+    if (isFiniteNumber(value) && <number>value <= is) {
       return;
     }
     return {
