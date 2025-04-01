@@ -25,7 +25,8 @@ export class ObjectSchema<
   #schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
     : never;
 
-  get schema() {
+  get schema(): T extends KeyableSchema<T extends undefined ? never : T> ? T
+    : never {
     return this.#schema;
   }
 
