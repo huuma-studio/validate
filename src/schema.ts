@@ -24,13 +24,12 @@ export interface Property {
 }
 
 export type OptionalType<T> = T extends undefined ? T : T | undefined;
-export type RequiredType<T> = T extends undefined
-  ? never
+export type RequiredType<T> = T extends undefined ? never
   : Exclude<T, undefined>;
 
 export interface Schema<T> {
   validate(value: unknown, key?: string): Validation<T>;
-  type: T;
+  infer: T;
 }
 
 export abstract class BaseSchema<T> implements Schema<T> {
@@ -39,7 +38,16 @@ export abstract class BaseSchema<T> implements Schema<T> {
     isRequired: true,
   };
 
-  readonly type!: T;
+  readonly infer!: T;
+  #type: string;
+
+  constructor(type: string) {
+    this.#type = type;
+  }
+
+  toString(): string {
+    return this.#type;
+  }
 
   protected validator(validator: Validator): this {
     this.property.validators.push(validator);
@@ -59,7 +67,7 @@ export abstract class BaseSchema<T> implements Schema<T> {
 
 export abstract class PrimitiveSchema<T, R, O> extends BaseSchema<T> {
   constructor(type: string) {
-    super();
+    super(type);
     this.property.validators = [required(type)];
   }
 
@@ -70,12 +78,12 @@ export abstract class PrimitiveSchema<T, R, O> extends BaseSchema<T> {
 
   required(): R {
     this.property.isRequired = true;
-    return <R>(<unknown>this);
+    return <R> (<unknown> this);
   }
 
   optional(): O {
     this.property.isRequired = false;
-    return <O>(<unknown>this);
+    return <O> (<unknown> this);
   }
 
   validate(value: unknown, key?: string): Validation<T> {
@@ -96,7 +104,7 @@ export abstract class PrimitiveSchema<T, R, O> extends BaseSchema<T> {
     }
 
     return {
-      value: <T>value,
+      value: <T> value,
       errors: undefined,
     };
   }

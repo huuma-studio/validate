@@ -13,6 +13,11 @@ const url3 = "ssh://cargo.wtf";
 const url4 = "http://cargo.wtf";
 const url5 = "https://cargo.wtf";
 
+Deno.test("URL Schema Validation: 'toString()'", () => {
+  const isURLSchema = new URLSchema();
+  assertEquals(isURLSchema.toString(), "url");
+});
+
 Deno.test("URL Schema Validation: 'isUrl'", async (t) => {
   await t.step("should validate URLs", () => {
     const UrlSchema = new URLSchema();

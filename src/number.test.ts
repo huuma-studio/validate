@@ -21,6 +21,11 @@ const isNotMaximumMessage = {
   message: '"number" is bigger than 10',
 };
 
+Deno.test("Number Schema Validation: 'toString'", () => {
+  const isNumber = new NumberSchema();
+  assertEquals(isNumber.toString(), "number");
+});
+
 Deno.test("Number Schema Validation: 'isNumber'", () => {
   const isNumber = new NumberSchema();
 

@@ -16,18 +16,27 @@ type KeyableSchema<T> = {
 };
 
 type SchemaType<T> = {
-  [P in keyof T]: T[P] extends Schema<infer U> ? T[P]["type"] : never;
+  [P in keyof T]: T[P] extends Schema<infer U> ? T[P]["infer"] : never;
 };
 
 export class ObjectSchema<
   T extends KeyableSchema<T | undefined>,
 > extends BaseSchema<SchemaType<T>> {
+  #schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
+    : never;
+
+  get schema() {
+    return this.#schema;
+  }
+
   constructor(
-    private schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
+    schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
       : never,
   ) {
-    super();
-    this.validator(required("object")).validator(isObject);
+    const type = "object";
+    super(type);
+    this.#schema = schema;
+    this.validator(required(type)).validator(isObject);
   }
 
   required(): ObjectSchema<T> {
@@ -48,12 +57,12 @@ export class ObjectSchema<
         const result = validator(toValidate, key);
         if (result) errors.push(result);
       }
-      for (const key in this.schema) {
+      for (const key in this.#schema) {
         const toPush = isDefined(toValidate) && typeof toValidate !== "function"
           ? (<Keyable> toValidate)[key]
           : undefined;
 
-        const { value, errors: validationErrors } = this.schema[key].validate(
+        const { value, errors: validationErrors } = this.#schema[key].validate(
           toPush,
           key,
         );

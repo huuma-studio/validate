@@ -13,7 +13,7 @@ export class EnumSchema<
   EnumSchema<OptionalType<T>>
 > {
   constructor(private values: RequiredType<T>[]) {
-    super("enum");
+    super(`enum:${values.join(",")}`);
     this.validator(isEnum(values));
   }
 }

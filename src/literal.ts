@@ -13,7 +13,7 @@ export class LiteralSchema<
   LiteralSchema<OptionalType<T>>
 > {
   constructor(value: RequiredType<T>) {
-    super("literal");
+    super(`literal:${value}`);
     this.validator(isLiteral(value));
   }
 }

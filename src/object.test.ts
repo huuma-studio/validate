@@ -15,6 +15,11 @@ const nameNotStringMessage = {
   message: '"name" is not type "string"',
 };
 
+Deno.test("Object Schema Validation: 'toString'", () => {
+  const isObject = new ObjectSchema({});
+  assertEquals(isObject.toString(), "object");
+});
+
 Deno.test("Object Schema Validation: 'isObject'", () => {
   const isObject = new ObjectSchema({
     name: new StringSchema(),

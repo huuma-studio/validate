@@ -5,6 +5,11 @@ const notUUIDMessage = '"string" is not a valid "UUID"';
 const uuid1 = "ae6ad8ac-78c7-11ed-a1eb-0242ac120002";
 const uuid4 = "a05dfb70-7359-45a8-8407-45f509b24258";
 
+Deno.test("UUID Schema Validation: 'toString()'", () => {
+  const isUUIDSchema = new UUIDSchema();
+  assertEquals(isUUIDSchema.toString(), "uuid");
+});
+
 Deno.test("UUID Schema Validation: 'isUUID'", async (t) => {
   await t.step("should validated all UUIDs", () => {
     const uuidSchema = new UUIDSchema();

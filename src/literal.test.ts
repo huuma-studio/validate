@@ -3,11 +3,20 @@ import { LiteralSchema } from "./literal.ts";
 import { assertThrows } from "@std/assert/throws";
 
 Deno.test(LiteralSchema.name, async (t) => {
+  await t.step("should return correct toString value (number)", () => {
+    const literal = new LiteralSchema(2);
+    assertEquals(literal.toString(), "literal:2");
+  });
+
   await t.step("should validate literal number 2", () => {
     const literal = new LiteralSchema(2);
     assertEquals(literal.validate(2).value, 2);
   });
 
+  await t.step("should return correct toString value (string)", () => {
+    const literal = new LiteralSchema("Hello World");
+    assertEquals(literal.toString(), "literal:Hello World");
+  });
   await t.step('should validate literal string "Hello World"', () => {
     const literal = new LiteralSchema("Hello World");
     const validation = literal.validate("Hello World");

@@ -7,6 +7,11 @@ const requiredMessage = { message: `"array" is required` };
 
 const notArrayMessage = { message: `"array" not type "array"` };
 
+Deno.test("Array Schema Validation: 'toString'", () => {
+  const isArray = new ArraySchema(new StringSchema());
+  assertEquals(isArray.toString(), "array");
+});
+
 Deno.test("Array Schema Validation: 'isArray'", () => {
   const isArray = new ArraySchema(new StringSchema());
 

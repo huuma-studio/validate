@@ -9,10 +9,11 @@ import {
 
 export class ArraySchema<
   T extends Schema<unknown> | undefined,
-> extends BaseSchema<T extends Schema<unknown> ? T["type"][] : undefined> {
+> extends BaseSchema<T extends Schema<unknown> ? T["infer"][] : undefined> {
   constructor(private schema: T extends undefined ? never : T) {
-    super();
-    this.validator(required("array")).validator(isArray);
+    const type = "array";
+    super(type);
+    this.validator(required(type)).validator(isArray);
   }
 
   required(): ArraySchema<T> {
@@ -28,7 +29,7 @@ export class ArraySchema<
   validate(
     toValidate: unknown,
     key?: string,
-  ): Validation<T extends Schema<unknown> ? T["type"][] : undefined> {
+  ): Validation<T extends Schema<unknown> ? T["infer"][] : undefined> {
     const errors: ValidationError[] = [];
 
     if (this.property.isRequired || isDefined(toValidate)) {
@@ -63,7 +64,7 @@ export class ArraySchema<
     }
 
     return {
-      value: <T extends Schema<unknown> ? T["type"][] : undefined> toValidate,
+      value: <T extends Schema<unknown> ? T["infer"][] : undefined> toValidate,
       errors: undefined,
     };
   }

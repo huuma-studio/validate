@@ -16,6 +16,11 @@ const notFalseMessage = {
   message: '"boolean" is not "false"',
 };
 
+Deno.test("Boolean Schema Validation: 'toString'", () => {
+  const isBoolean = new BooleanSchema().toString();
+  assertEquals(isBoolean.toString(), "boolean");
+});
+
 Deno.test("Boolean Schema Validation: 'isBoolean'", () => {
   const isBoolean = new BooleanSchema();
 

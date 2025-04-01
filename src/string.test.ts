@@ -37,9 +37,10 @@ const regexMessage = {
   message: '"string" does not match regex "/^[a-z]+$/g"',
 };
 
-const a = new StringSchema().optional();
-
-a.type;
+Deno.test("String Schema Validation: 'isString'", () => {
+  const isString = new StringSchema();
+  assertEquals(isString.toString(), "string");
+});
 
 Deno.test("String Schema Validation: 'isString'", () => {
   const isString = new StringSchema();
