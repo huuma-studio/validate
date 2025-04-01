@@ -1,7 +1,19 @@
 {
   "name": "@huuma/validate",
-  "version": "0.0.1",
-  "exports": { ".": "./src/mod.ts", "./middleware": "./src/middleware.ts" },
+  "version": "0.0.2",
+  "exports": {
+    ".": "./src/mod.ts",
+    "./array": "./src/array.ts",
+    "./boolean": "./src/boolean.ts",
+    "./enum": "./src/enum.ts",
+    "./literal": "./src/literal.ts",
+    "./number": "./src/number.ts",
+    "./object": "./src/object.ts",
+    "./string": "./src/string.ts",
+    "./url": "./src/url.ts",
+    "./uuid": "./src/uuid.ts",
+    "./middleware": "./src/middleware.ts"
+  },
   "imports": {
     "@huuma/route": "jsr:@huuma/route@^0.0.1",
     "@std/assert": "jsr:@std/assert@^1.0.12"
