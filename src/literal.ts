@@ -1,9 +1,9 @@
 import {
+  type OptionalType,
   PrimitiveSchema,
-  Validator,
-  RequiredType,
-  OptionalType,
-} from "../schema.ts";
+  type RequiredType,
+  type Validator,
+} from "./schema.ts";
 
 export class LiteralSchema<
   T extends string | number | undefined,

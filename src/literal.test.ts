@@ -1,6 +1,6 @@
-import { assertEquals } from "std/assert/assert_equals.ts";
-import { assertThrows } from "std/assert/assert_throws.ts";
+import { assertEquals } from "@std/assert/equals";
 import { LiteralSchema } from "./literal.ts";
+import { assertThrows } from "@std/assert/throws";
 
 Deno.test(LiteralSchema.name, async (t) => {
   await t.step("should validate literal number 2", () => {

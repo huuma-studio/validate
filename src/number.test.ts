@@ -1,6 +1,6 @@
-import { assertEquals } from "std/assert/assert_equals.ts";
-import { assertArrayIncludes } from "std/assert/assert_array_includes.ts";
-import { NumberSchema } from "../schemas/number.ts";
+import { assertArrayIncludes } from "@std/assert/array-includes";
+import { NumberSchema } from "./number.ts";
+import { assertEquals } from "@std/assert/equals";
 
 const requiredMessage = {
   message: '"number" is required',

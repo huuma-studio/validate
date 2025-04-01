@@ -1,7 +1,7 @@
-import { assertEquals } from "std/assert/assert_equals.ts";
-import { assertArrayIncludes } from "std/assert/assert_array_includes.ts";
-import { StringSchema } from "../schemas/string.ts";
-import { ArraySchema } from "../schemas/array.ts";
+import { assertArrayIncludes, assertEquals } from "@std/assert";
+
+import { StringSchema } from "./string.ts";
+import { ArraySchema } from "./array.ts";
 
 const requiredMessage = { message: `"array" is required` };
 

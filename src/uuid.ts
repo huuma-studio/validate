@@ -1,9 +1,9 @@
 import {
+  type OptionalType,
   PrimitiveSchema,
-  ValidationError,
-  RequiredType,
-  OptionalType,
-} from "../schema.ts";
+  type RequiredType,
+  type ValidationError,
+} from "./schema.ts";
 
 export type Version = "1" | "4" | "all";
 

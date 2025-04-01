@@ -2,10 +2,10 @@ import {
   BaseSchema,
   isDefined,
   required,
-  Schema,
-  Validation,
-  ValidationError,
-} from "../schema.ts";
+  type Schema,
+  type Validation,
+  type ValidationError,
+} from "./schema.ts";
 
 export class ArraySchema<
   T extends Schema<unknown> | undefined,
@@ -15,14 +15,14 @@ export class ArraySchema<
     this.validator(required("array")).validator(isArray);
   }
 
-  required() {
+  required(): ArraySchema<T> {
     this.property.isRequired = true;
-    return <ArraySchema<T>> this;
+    return this;
   }
 
-  optional() {
+  optional(): ArraySchema<T | undefined> {
     this.property.isRequired = false;
-    return <ArraySchema<T | undefined>> this;
+    return this;
   }
 
   validate(

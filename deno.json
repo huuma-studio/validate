@@ -1,5 +1,11 @@
 {
-  "importMap": "./.dev/import_map.json",
+  "name": "@huuma/validate",
+  "version": "0.0.1",
+  "exports": { ".": "./src/mod.ts", "./middleware": "./src/middleware.ts" },
+  "imports": {
+    "@huuma/route": "jsr:@huuma/route@^0.0.1",
+    "@std/assert": "jsr:@std/assert@^1.0.12"
+  },
   "tasks": {
     "check": "deno check src/**/*.ts"
   }

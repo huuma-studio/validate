@@ -1,9 +1,9 @@
 import {
+  type OptionalType,
   PrimitiveSchema,
-  ValidationError,
-  RequiredType,
-  OptionalType,
-} from "../schema.ts";
+  type RequiredType,
+  type ValidationError,
+} from "./schema.ts";
 
 export class BooleanSchema<T = boolean> extends PrimitiveSchema<
   T,

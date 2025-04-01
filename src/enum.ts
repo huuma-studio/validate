@@ -1,9 +1,9 @@
 import {
+  type OptionalType,
   PrimitiveSchema,
-  Validator,
-  RequiredType,
-  OptionalType,
-} from "../schema.ts";
+  type RequiredType,
+  type Validator,
+} from "./schema.ts";
 
 export class EnumSchema<
   T extends string | number | undefined,
@@ -24,7 +24,9 @@ function isEnum(values: unknown[]): Validator {
       return;
     }
     return {
-      message: `"${key || "enum"}": ("${value}") is not one of ${values.map((value) => `"${value}"`).join(", ")}`,
+      message: `"${key || "enum"}": ("${value}") is not one of ${
+        values.map((value) => `"${value}"`).join(", ")
+      }`,
     };
   };
 }

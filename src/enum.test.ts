@@ -1,4 +1,4 @@
-import { assertEquals } from "std/assert/assert_equals.ts";
+import { assertEquals } from "@std/assert/equals";
 import { EnumSchema } from "./enum.ts";
 
 Deno.test(EnumSchema.name, async (t) => {

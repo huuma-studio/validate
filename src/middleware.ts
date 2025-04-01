@@ -1,29 +1,29 @@
-import { Next } from "cargo/middleware/middleware.ts";
-import type { Schema, ValidationError } from "../../schema.ts";
-import type { RequestContext } from "cargo/http/request.ts";
-import { BadRequestException } from "cargo/http/exceptions/bad-request-exception.ts";
+import { BadRequestException } from "@huuma/route/http/exception/bad-request-exception";
+import type { RequestContext } from "@huuma/route/http/request";
+import type { Middleware, Next } from "@huuma/route/middleware";
+import type { Schema, ValidationError } from "./schema.ts";
 
-export function validateBody(schema: Schema<unknown>) {
+export function validateBody(schema: Schema<unknown>): Middleware {
   return (ctx: RequestContext, next: Next) => {
     const errors = schema.validate(ctx.body, "Request Body").errors;
     if (errors?.length) {
       throwValidationException(errors);
     }
-    return next(ctx);
+    return next();
   };
 }
 
-export function validateSearch(schema: Schema<unknown>) {
+export function validateSearch(schema: Schema<unknown>): Middleware {
   return (ctx: RequestContext, next: Next) => {
     const errors = schema.validate(ctx.search, "Search Parameters").errors;
     if (errors?.length) {
       throwValidationException(errors);
     }
-    return next(ctx);
+    return next();
   };
 }
 
-function throwValidationException(errors: ValidationError[]) {
+function throwValidationException(errors: ValidationError[]): void {
   const exception = new BadRequestException();
   exception.error = errors.map((error) => {
     return `${error.message}`;

@@ -1,10 +1,10 @@
 import {
+  type OptionalType,
   PrimitiveSchema,
-  ValidationError,
-  Validator,
-  RequiredType,
-  OptionalType,
-} from "../schema.ts";
+  type RequiredType,
+  type ValidationError,
+  type Validator,
+} from "./schema.ts";
 
 export class URLSchema<T = string> extends PrimitiveSchema<
   T,
@@ -16,12 +16,12 @@ export class URLSchema<T = string> extends PrimitiveSchema<
     this.validator(isUrl);
   }
 
-  http(secure = true) {
+  http(secure = true): URLSchema<T> {
     this.validator(isHttp(secure));
     return this;
   }
 
-  protocol(protocol: string) {
+  protocol(protocol: string): URLSchema<T> {
     this.validator(isProtocol(protocol));
     return this;
   }
@@ -55,16 +55,18 @@ function isHttp(secure: boolean): Validator {
       return;
     }
     return {
-      message: `"${key || "url"}" is not of protocol type "${allowed.join(
-        `" or "`,
-      )}"`,
+      message: `"${key || "url"}" is not of protocol type "${
+        allowed.join(
+          `" or "`,
+        )
+      }"`,
     };
   };
 }
 
 function url(value: unknown): URL | undefined {
   try {
-    return new URL(<string>value);
+    return new URL(<string> value);
   } catch {
     return;
   }

@@ -1,4 +1,4 @@
-import { assertEquals } from "std/assert/assert_equals.ts";
+import { assertEquals } from "@std/assert/equals";
 import { URLSchema } from "./url.ts";
 
 const notDefinedMessage = '"url" is required';

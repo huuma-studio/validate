@@ -2,10 +2,10 @@ import {
   BaseSchema,
   isDefined,
   required,
-  Schema,
-  ValidationError,
-  Validation,
-} from "../schema.ts";
+  type Schema,
+  type Validation,
+  type ValidationError,
+} from "./schema.ts";
 
 interface Keyable {
   [key: string]: unknown;
@@ -23,8 +23,7 @@ export class ObjectSchema<
   T extends KeyableSchema<T | undefined>,
 > extends BaseSchema<SchemaType<T>> {
   constructor(
-    private schema: T extends KeyableSchema<T extends undefined ? never : T>
-      ? T
+    private schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
       : never,
   ) {
     super();
@@ -38,7 +37,7 @@ export class ObjectSchema<
 
   optional(): ObjectSchema<T | undefined> {
     this.property.isRequired = false;
-    return <ObjectSchema<T | undefined>>this;
+    return <ObjectSchema<T | undefined>> this;
   }
 
   validate(toValidate: unknown, key?: string): Validation<SchemaType<T>> {
@@ -50,10 +49,9 @@ export class ObjectSchema<
         if (result) errors.push(result);
       }
       for (const key in this.schema) {
-        const toPush =
-          isDefined(toValidate) && typeof toValidate !== "function"
-            ? (<Keyable>toValidate)[key]
-            : undefined;
+        const toPush = isDefined(toValidate) && typeof toValidate !== "function"
+          ? (<Keyable> toValidate)[key]
+          : undefined;
 
         const { value, errors: validationErrors } = this.schema[key].validate(
           toPush,
@@ -75,7 +73,7 @@ export class ObjectSchema<
     }
 
     return {
-      value: <SchemaType<T>>schemaType,
+      value: <SchemaType<T>> schemaType,
       errors: undefined,
     };
   }

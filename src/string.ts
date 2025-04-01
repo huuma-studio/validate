@@ -1,4 +1,8 @@
-import { PrimitiveSchema, ValidationError, Validator } from "../schema.ts";
+import {
+  PrimitiveSchema,
+  type ValidationError,
+  type Validator,
+} from "./schema.ts";
 
 export class StringSchema<T = string> extends PrimitiveSchema<
   T,
@@ -98,7 +102,7 @@ function isNotEquals(to: string): Validator {
 function startsWith(needle: string): Validator {
   return (value: unknown, key?: string) => {
     const startsWith = new RegExp(`^${needle}`);
-    if (startsWith.test(<string>value)) {
+    if (startsWith.test(<string> value)) {
       return;
     }
     return {
@@ -110,7 +114,7 @@ function startsWith(needle: string): Validator {
 function endsWith(needle: string): Validator {
   const endsWith = new RegExp(`${needle}$`);
   return (value: unknown, key?: string) => {
-    if (endsWith.test(<string>value)) {
+    if (endsWith.test(<string> value)) {
       return;
     }
     return {
@@ -120,7 +124,7 @@ function endsWith(needle: string): Validator {
 }
 function isRegex(regex: RegExp): Validator {
   return (value: unknown, key?: string) => {
-    if (typeof value === "string" && regex.test(<string>value)) {
+    if (typeof value === "string" && regex.test(<string> value)) {
       return;
     }
     return {

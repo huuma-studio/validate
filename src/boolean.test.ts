@@ -1,6 +1,7 @@
-import { assertEquals } from "std/assert/assert_equals.ts";
-import { assertArrayIncludes } from "std/assert/assert_array_includes.ts";
-import { BooleanSchema } from "../schemas/bool.ts";
+import { assertArrayIncludes } from "@std/assert/array-includes";
+import { assertEquals } from "@std/assert/equals";
+
+import { BooleanSchema } from "./boolean.ts";
 
 const requiredMessage = {
   message: '"boolean" is required',
