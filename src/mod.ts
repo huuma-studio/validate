@@ -8,3 +8,4 @@ export { ObjectSchema } from "./object.ts";
 export { StringSchema } from "./string.ts";
 export { URLSchema } from "./url.ts";
 export { UUIDSchema } from "./uuid.ts";
+export { UnionSchema } from "./union.ts";
