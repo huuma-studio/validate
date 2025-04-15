@@ -42,6 +42,8 @@ export class NumberSchema<T = number> extends PrimitiveSchema<
   }
 }
 
+export const Numb = NumberSchema;
+
 export function number(): NumberSchema {
   return new NumberSchema();
 }

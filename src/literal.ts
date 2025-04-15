@@ -18,6 +18,8 @@ export class LiteralSchema<
   }
 }
 
+export const Lit = LiteralSchema;
+
 function isLiteral<T>(to: T): Validator {
   return (value: unknown, key?: string) => {
     if (value === to) {

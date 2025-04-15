@@ -13,18 +13,20 @@ const patterns: Record<Version, RegExp> = {
   4: /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
 };
 
-export class UUIDSchema<T = string> extends PrimitiveSchema<
+export class UuidSchema<T = string> extends PrimitiveSchema<
   T,
-  UUIDSchema<RequiredType<T>>,
-  UUIDSchema<OptionalType<T>>
+  UuidSchema<RequiredType<T>>,
+  UuidSchema<OptionalType<T>>
 > {
   constructor(version?: Version) {
     super("uuid");
-    this.validator(isUUID(version));
+    this.validator(isUuid(version));
   }
 }
 
-function isUUID(version?: Version) {
+export const Uuid = UuidSchema;
+
+function isUuid(version?: Version) {
   return (value: unknown, key?: string): ValidationError | undefined => {
     if (typeof value === "string" && patterns[version || "all"].test(value)) {
       return;

@@ -6,22 +6,22 @@ import {
   type Validator,
 } from "./schema.ts";
 
-export class URLSchema<T = string> extends PrimitiveSchema<
+export class UrlSchema<T = string> extends PrimitiveSchema<
   T,
-  URLSchema<RequiredType<T>>,
-  URLSchema<OptionalType<T>>
+  UrlSchema<RequiredType<T>>,
+  UrlSchema<OptionalType<T>>
 > {
   constructor() {
     super("url");
     this.validator(isUrl);
   }
 
-  http(secure = true): URLSchema<T> {
+  http(secure = true): UrlSchema<T> {
     this.validator(isHttp(secure));
     return this;
   }
 
-  protocol(protocol: string): URLSchema<T> {
+  protocol(protocol: string): UrlSchema<T> {
     this.validator(isProtocol(protocol));
     return this;
   }
@@ -63,6 +63,8 @@ function isHttp(secure: boolean): Validator {
     };
   };
 }
+
+export const Url = UrlSchema;
 
 function url(value: unknown): URL | undefined {
   try {

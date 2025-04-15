@@ -42,3 +42,5 @@ export class UnionSchema<
     };
   }
 }
+
+export const Union = UnionSchema;

@@ -26,6 +26,8 @@ export class BooleanSchema<T = boolean> extends PrimitiveSchema<
   }
 }
 
+export const Bool = BooleanSchema;
+
 function isBoolean(value: unknown, key?: string): ValidationError | undefined {
   if (typeof value === "boolean") {
     return;

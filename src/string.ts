@@ -50,6 +50,8 @@ export class StringSchema<T = string> extends PrimitiveSchema<
   }
 }
 
+export const Str = StringSchema;
+
 function isString(value: unknown, key?: string): ValidationError | undefined {
   if (typeof value === "string") {
     return;

@@ -18,6 +18,8 @@ export class EnumSchema<
   }
 }
 
+export const Enum = EnumSchema;
+
 function isEnum(values: unknown[]): Validator {
   return (value: unknown, key?: string) => {
     if (values.includes(value)) {

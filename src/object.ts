@@ -89,6 +89,8 @@ export class ObjectSchema<
   }
 }
 
+export const Obj = ObjectSchema;
+
 function isObject(value: unknown, key?: string): ValidationError | undefined {
   if (isValidObject(value)) {
     return;

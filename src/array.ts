@@ -70,6 +70,8 @@ export class ArraySchema<
   }
 }
 
+export const Arr = ArraySchema;
+
 function isArray(value: unknown, key?: string): ValidationError | undefined {
   if (Array.isArray(value)) {
     return;
