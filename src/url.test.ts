@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert/equals";
-import { URLSchema } from "./url.ts";
+import { UrlSchema } from "./url.ts";
 
 const notDefinedMessage = '"url" is required';
 const notURLMessage = '"url" is not a valid "URL"';
@@ -14,46 +14,46 @@ const url4 = "http://cargo.wtf";
 const url5 = "https://cargo.wtf";
 
 Deno.test("URL Schema Validation: 'toString()'", () => {
-  const isURLSchema = new URLSchema();
+  const isURLSchema = new UrlSchema();
   assertEquals(isURLSchema.toString(), "url");
 });
 
 Deno.test("URL Schema Validation: 'isUrl'", async (t) => {
   await t.step("should validate URLs", () => {
-    const UrlSchema = new URLSchema();
-    assertEquals(UrlSchema.validate(undefined).errors, [
+    const urlSchema = new UrlSchema();
+    assertEquals(urlSchema.validate(undefined).errors, [
       { message: notDefinedMessage },
       { message: notURLMessage },
     ]);
-    assertEquals(UrlSchema.validate(url1).errors, [{ message: notURLMessage }]);
-    assertEquals(UrlSchema.validate(url4).errors, undefined);
+    assertEquals(urlSchema.validate(url1).errors, [{ message: notURLMessage }]);
+    assertEquals(urlSchema.validate(url4).errors, undefined);
     // assertEquals(UrlSchema.validate(url4).errors, []);
   });
 
   await t.step("should allow undefined", () => {
-    const UrlSchema = new URLSchema().optional();
-    assertEquals(UrlSchema.validate(undefined).errors, undefined);
-    assertEquals(UrlSchema.validate(url1).errors, [
+    const urlSchema = new UrlSchema().optional();
+    assertEquals(urlSchema.validate(undefined).errors, undefined);
+    assertEquals(urlSchema.validate(url1).errors, [
       {
         message: notURLMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url2).errors, undefined);
-    assertEquals(UrlSchema.validate(url3).errors, undefined);
-    assertEquals(UrlSchema.validate(url4).errors, undefined);
-    assertEquals(UrlSchema.validate(url5).errors, undefined);
+    assertEquals(urlSchema.validate(url2).errors, undefined);
+    assertEquals(urlSchema.validate(url3).errors, undefined);
+    assertEquals(urlSchema.validate(url4).errors, undefined);
+    assertEquals(urlSchema.validate(url5).errors, undefined);
   });
 });
 
 Deno.test("URL Schema Validation: 'isHttp'", async (t) => {
   await t.step("should validate protocol(https)", () => {
-    const UrlSchema = new URLSchema().http();
-    assertEquals(UrlSchema.validate(undefined).errors, [
+    const urlSchema = new UrlSchema().http();
+    assertEquals(urlSchema.validate(undefined).errors, [
       { message: notDefinedMessage },
       { message: notURLMessage },
       { message: notHttpsMessage },
     ]);
-    assertEquals(UrlSchema.validate(url1).errors, [
+    assertEquals(urlSchema.validate(url1).errors, [
       {
         message: notURLMessage,
       },
@@ -61,34 +61,34 @@ Deno.test("URL Schema Validation: 'isHttp'", async (t) => {
         message: notHttpsMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url2).errors, [
+    assertEquals(urlSchema.validate(url2).errors, [
       {
         message: notHttpsMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url3).errors, [
+    assertEquals(urlSchema.validate(url3).errors, [
       {
         message: notHttpsMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url4).errors, [
+    assertEquals(urlSchema.validate(url4).errors, [
       {
         message: notHttpsMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url5).errors, undefined);
+    assertEquals(urlSchema.validate(url5).errors, undefined);
   });
 });
 
 Deno.test("URL Schema Validation: 'isHttp'", async (t) => {
   await t.step("should validate http protocol(http/https)", () => {
-    const UrlSchema = new URLSchema().http(false);
-    assertEquals(UrlSchema.validate(undefined).errors, [
+    const urlSchema = new UrlSchema().http(false);
+    assertEquals(urlSchema.validate(undefined).errors, [
       { message: notDefinedMessage },
       { message: notURLMessage },
       { message: notHttpMessage },
     ]);
-    assertEquals(UrlSchema.validate(url1).errors, [
+    assertEquals(urlSchema.validate(url1).errors, [
       {
         message: notURLMessage,
       },
@@ -96,30 +96,30 @@ Deno.test("URL Schema Validation: 'isHttp'", async (t) => {
         message: notHttpMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url2).errors, [
+    assertEquals(urlSchema.validate(url2).errors, [
       {
         message: notHttpMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url3).errors, [
+    assertEquals(urlSchema.validate(url3).errors, [
       {
         message: notHttpMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url4).errors, undefined);
-    assertEquals(UrlSchema.validate(url5).errors, undefined);
+    assertEquals(urlSchema.validate(url4).errors, undefined);
+    assertEquals(urlSchema.validate(url5).errors, undefined);
   });
 });
 
 Deno.test("URL Schema Validation: 'isProtocol'", async (t) => {
   await t.step("should validate protocol", () => {
-    const UrlSchema = new URLSchema().protocol("ssh:");
-    assertEquals(UrlSchema.validate(undefined).errors, [
+    const urlSchema = new UrlSchema().protocol("ssh:");
+    assertEquals(urlSchema.validate(undefined).errors, [
       { message: notDefinedMessage },
       { message: notURLMessage },
       { message: notSSHMessage },
     ]);
-    assertEquals(UrlSchema.validate(url1).errors, [
+    assertEquals(urlSchema.validate(url1).errors, [
       {
         message: notURLMessage,
       },
@@ -127,18 +127,18 @@ Deno.test("URL Schema Validation: 'isProtocol'", async (t) => {
         message: notSSHMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url2).errors, [
+    assertEquals(urlSchema.validate(url2).errors, [
       {
         message: notSSHMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url3).errors, undefined);
-    assertEquals(UrlSchema.validate(url4).errors, [
+    assertEquals(urlSchema.validate(url3).errors, undefined);
+    assertEquals(urlSchema.validate(url4).errors, [
       {
         message: notSSHMessage,
       },
     ]);
-    assertEquals(UrlSchema.validate(url5).errors, [
+    assertEquals(urlSchema.validate(url5).errors, [
       {
         message: notSSHMessage,
       },
