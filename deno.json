@@ -1,6 +1,6 @@
 {
   "name": "@huuma/validate",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "exports": {
     ".": "./src/mod.ts",
     "./array": "./src/array.ts",
@@ -13,6 +13,7 @@
     "./url": "./src/url.ts",
     "./uuid": "./src/uuid.ts",
     "./union": "./src/union.ts",
+    "./undefined": "./src/undefined.ts",
     "./middleware": "./src/middleware.ts"
   },
   "imports": {
