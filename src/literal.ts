@@ -14,13 +14,17 @@ export class LiteralSchema<
 > {
   constructor(value: RequiredType<T>) {
     super(`literal:${value}`);
-    this.validator(isLiteral(value));
+    this.validator(_isLiteral(value));
   }
 }
 
-export const Lit = LiteralSchema;
+export function literal<T extends string | number | undefined>(
+  value: RequiredType<T>,
+): LiteralSchema<T> {
+  return new LiteralSchema(value);
+}
 
-function isLiteral<T>(to: T): Validator {
+function _isLiteral<T>(to: T): Validator {
   return (value: unknown, key?: string) => {
     if (value === to) {
       return;

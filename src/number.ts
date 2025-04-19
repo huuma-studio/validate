@@ -13,43 +13,41 @@ export class NumberSchema<T = number> extends PrimitiveSchema<
 > {
   constructor() {
     super("number");
-    this.property.validators.push(isNumber);
+    this.property.validators.push(_isNumber);
   }
 
   positive(): this {
-    this.validator(isPositive);
+    this.validator(_isPositive);
     return this;
   }
 
   negative(): this {
-    this.validator(isNegative);
+    this.validator(_isNegative);
     return this;
   }
 
   equals(to: number): this {
-    this.validator(isEquals(to));
+    this.validator(_isEquals(to));
     return this;
   }
 
   min(like: number): this {
-    this.validator(isMin(like));
+    this.validator(_isMin(like));
     return this;
   }
 
   max(like: number): this {
-    this.validator(isMax(like));
+    this.validator(_isMax(like));
     return this;
   }
 }
-
-export const Numb = NumberSchema;
 
 export function number(): NumberSchema {
   return new NumberSchema();
 }
 
-function isNumber(value: unknown, key?: string): ValidationError | undefined {
-  if (isFiniteNumber(value)) {
+function _isNumber(value: unknown, key?: string): ValidationError | undefined {
+  if (_isFiniteNumber(value)) {
     return;
   }
   return {
@@ -57,8 +55,11 @@ function isNumber(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isPositive(value: unknown, key?: string): ValidationError | undefined {
-  if (isFiniteNumber(value) && <number> value >= 1) {
+function _isPositive(
+  value: unknown,
+  key?: string,
+): ValidationError | undefined {
+  if (_isFiniteNumber(value) && <number> value >= 1) {
     return;
   }
   return {
@@ -66,8 +67,11 @@ function isPositive(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isNegative(value: unknown, key?: string): ValidationError | undefined {
-  if (isFiniteNumber(value) && <number> value < 0) {
+function _isNegative(
+  value: unknown,
+  key?: string,
+): ValidationError | undefined {
+  if (_isFiniteNumber(value) && <number> value < 0) {
     return;
   }
   return {
@@ -75,7 +79,7 @@ function isNegative(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isEquals(to: number): Validator {
+function _isEquals(to: number): Validator {
   return (value: unknown, key?: string) => {
     if (value === to) {
       return;
@@ -86,9 +90,9 @@ function isEquals(to: number): Validator {
   };
 }
 
-function isMin(is: number): Validator {
+function _isMin(is: number): Validator {
   return (value: unknown, key?: string) => {
-    if (isFiniteNumber(value) && <number> value >= is) {
+    if (_isFiniteNumber(value) && <number> value >= is) {
       return;
     }
     return {
@@ -97,9 +101,9 @@ function isMin(is: number): Validator {
   };
 }
 
-function isMax(is: number): Validator {
+function _isMax(is: number): Validator {
   return (value: unknown, key?: string) => {
-    if (isFiniteNumber(value) && <number> value <= is) {
+    if (_isFiniteNumber(value) && <number> value <= is) {
       return;
     }
     return {
@@ -108,7 +112,7 @@ function isMax(is: number): Validator {
   };
 }
 
-function isFiniteNumber(value: unknown) {
+function _isFiniteNumber(value: unknown) {
   if (typeof value !== "number") {
     return false;
   }

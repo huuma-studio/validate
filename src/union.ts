@@ -43,4 +43,10 @@ export class UnionSchema<
   }
 }
 
-export const Union = UnionSchema;
+export function union<
+  T extends ReadonlyArray<
+    T[number] extends Schema<unknown> ? T[number] : never
+  >,
+>(schemas: T): UnionSchema<T> {
+  return new UnionSchema(schemas);
+}

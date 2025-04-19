@@ -6,7 +6,7 @@ export class UndefinedSchema extends BaseSchema<undefined> {
   }
 
   override validate(value: unknown, key?: string): Validation<undefined> {
-    const result = isUndefined(value, key);
+    const result = _isUndefined(value, key);
     if (result?.message) {
       return {
         value: undefined,
@@ -20,7 +20,11 @@ export class UndefinedSchema extends BaseSchema<undefined> {
   }
 }
 
-function isUndefined(
+export function undef(): UndefinedSchema {
+  return new UndefinedSchema();
+}
+
+function _isUndefined(
   value: unknown,
   key?: string,
 ): ValidationError | undefined {
@@ -31,8 +35,3 @@ function isUndefined(
     message: `"${key || "value"}" is not "undefined"`,
   };
 }
-
-export const Undefined = UndefinedSchema;
-
-const isIts = new Undefined().parse(null);
-console.log(isIts);

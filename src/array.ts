@@ -13,7 +13,7 @@ export class ArraySchema<
   constructor(private schema: T extends undefined ? never : T) {
     const type = "array";
     super(type);
-    this.validator(required(type)).validator(isArray);
+    this.validator(required(type)).validator(_isArray);
   }
 
   required(): ArraySchema<T> {
@@ -70,9 +70,15 @@ export class ArraySchema<
   }
 }
 
-export const Arr = ArraySchema;
+export function array<
+  T extends Schema<unknown> | undefined,
+>(
+  schema: T extends undefined ? never : T,
+): ArraySchema<T> {
+  return new ArraySchema(schema);
+}
 
-function isArray(value: unknown, key?: string): ValidationError | undefined {
+function _isArray(value: unknown, key?: string): ValidationError | undefined {
   if (Array.isArray(value)) {
     return;
   }

@@ -12,23 +12,25 @@ export class BooleanSchema<T = boolean> extends PrimitiveSchema<
 > {
   constructor() {
     super("boolean");
-    this.validator(isBoolean);
+    this.validator(_isBoolean);
   }
 
-  true(): this {
-    this.validator(isTrue);
-    return this;
+  true(): BooleanSchema<true> {
+    this.validator(_isTrue);
+    return <BooleanSchema<true>> this;
   }
 
-  false(): this {
-    this.validator(isFalse);
-    return this;
+  false(): BooleanSchema<false> {
+    this.validator(_isFalse);
+    return <BooleanSchema<false>> this;
   }
 }
 
-export const Bool = BooleanSchema;
+export function boolean(): BooleanSchema {
+  return new BooleanSchema();
+}
 
-function isBoolean(value: unknown, key?: string): ValidationError | undefined {
+function _isBoolean(value: unknown, key?: string): ValidationError | undefined {
   if (typeof value === "boolean") {
     return;
   }
@@ -37,7 +39,7 @@ function isBoolean(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isTrue(value: unknown, key?: string): ValidationError | undefined {
+function _isTrue(value: unknown, key?: string): ValidationError | undefined {
   if (value === true) {
     return;
   }
@@ -46,7 +48,7 @@ function isTrue(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isFalse(value: unknown, key?: string): ValidationError | undefined {
+function _isFalse(value: unknown, key?: string): ValidationError | undefined {
   if (value === false) {
     return;
   }

@@ -37,7 +37,7 @@ export class ObjectSchema<
     const type = "object";
     super(type);
     this.#schema = schema;
-    this.validator(required(type)).validator(isObject);
+    this.validator(required(type)).validator(_isObject);
   }
 
   required(): ObjectSchema<T> {
@@ -89,15 +89,22 @@ export class ObjectSchema<
   }
 }
 
-export const Obj = ObjectSchema;
+export function object<T extends KeyableSchema<T | undefined>>(
+  schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
+    : never,
+): ObjectSchema<
+  T
+> {
+  return new ObjectSchema(schema);
+}
 
-function isObject(value: unknown, key?: string): ValidationError | undefined {
-  if (isValidObject(value)) {
+function _isObject(value: unknown, key?: string): ValidationError | undefined {
+  if (_isValidObject(value)) {
     return;
   }
   return { message: `"${key || "object"}" not type "object"` };
 }
 
-function isValidObject(value: unknown) {
+function _isValidObject(value: unknown) {
   return typeof value === "object" && !Array.isArray(value) && value !== null;
 }

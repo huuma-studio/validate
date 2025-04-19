@@ -20,13 +20,15 @@ export class UuidSchema<T = string> extends PrimitiveSchema<
 > {
   constructor(version?: Version) {
     super("uuid");
-    this.validator(isUuid(version));
+    this.validator(_isUuid(version));
   }
 }
 
-export const Uuid = UuidSchema;
+export function uuid<T = string>(): UuidSchema<T> {
+  return new UuidSchema<T>();
+}
 
-function isUuid(version?: Version) {
+function _isUuid(version?: Version) {
   return (value: unknown, key?: string): ValidationError | undefined => {
     if (typeof value === "string" && patterns[version || "all"].test(value)) {
       return;

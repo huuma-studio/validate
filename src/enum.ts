@@ -12,15 +12,19 @@ export class EnumSchema<
   EnumSchema<RequiredType<T>>,
   EnumSchema<OptionalType<T>>
 > {
-  constructor(private values: RequiredType<T>[]) {
-    super(`enum:${values.join(",")}`);
-    this.validator(isEnum(values));
+  constructor(private enums: RequiredType<T>[]) {
+    super(`enum:${enums.join(",")}`);
+    this.validator(_isEnum(enums));
   }
 }
 
-export const Enum = EnumSchema;
+export function enums<
+  T extends string | number | undefined,
+>(enums: RequiredType<T>[]): EnumSchema<T> {
+  return new EnumSchema(enums);
+}
 
-function isEnum(values: unknown[]): Validator {
+function _isEnum(values: unknown[]): Validator {
   return (value: unknown, key?: string) => {
     if (values.includes(value)) {
       return;

@@ -28,7 +28,7 @@ export class UrlSchema<T = string> extends PrimitiveSchema<
 }
 
 function isUrl(value: unknown, key?: string): ValidationError | undefined {
-  if (url(value) instanceof URL) {
+  if (_isUrl(value) instanceof URL) {
     return;
   }
   return {
@@ -38,7 +38,7 @@ function isUrl(value: unknown, key?: string): ValidationError | undefined {
 
 function isProtocol(protocol: string): Validator {
   return (value: unknown, key?: string): ValidationError | undefined => {
-    if (url(value)?.protocol === protocol) {
+    if (_isUrl(value)?.protocol === protocol) {
       return;
     }
     return {
@@ -50,7 +50,7 @@ function isProtocol(protocol: string): Validator {
 function isHttp(secure: boolean): Validator {
   return (value: unknown, key?: string): ValidationError | undefined => {
     const allowed = secure ? ["https:"] : ["http:", "https:"];
-    const protocol = url(value)?.protocol;
+    const protocol = _isUrl(value)?.protocol;
     if (protocol && allowed.includes(protocol)) {
       return;
     }
@@ -64,9 +64,11 @@ function isHttp(secure: boolean): Validator {
   };
 }
 
-export const Url = UrlSchema;
+export function url<T = string>(): UrlSchema<T> {
+  return new UrlSchema<T>();
+}
 
-function url(value: unknown): URL | undefined {
+function _isUrl(value: unknown): URL | undefined {
   try {
     return new URL(<string> value);
   } catch {

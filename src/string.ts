@@ -11,48 +11,50 @@ export class StringSchema<T = string> extends PrimitiveSchema<
 > {
   constructor() {
     super("string");
-    this.validator(isString);
+    this.validator(_isString);
   }
 
   empty(): this {
-    this.validator(isEmpty);
+    this.validator(_isEmpty);
     return this;
   }
 
   notEmpty(): this {
-    this.validator(isNotEmpty);
+    this.validator(_isNotEmpty);
     return this;
   }
 
   equals(to: string): this {
-    this.validator(isEquals(to));
+    this.validator(_isEquals(to));
     return this;
   }
 
   notEquals(to: string): this {
-    this.validator(isNotEquals(to));
+    this.validator(_isNotEquals(to));
     return this;
   }
 
   startsWith(needle: string): this {
-    this.validator(startsWith(needle));
+    this.validator(_startsWith(needle));
     return this;
   }
 
   endsWith(needle: string): this {
-    this.validator(endsWith(needle));
+    this.validator(_endsWith(needle));
     return this;
   }
 
   regex(regex: RegExp): this {
-    this.validator(isRegex(regex));
+    this.validator(_isRegex(regex));
     return this;
   }
 }
 
-export const Str = StringSchema;
+export function string(): StringSchema {
+  return new StringSchema();
+}
 
-function isString(value: unknown, key?: string): ValidationError | undefined {
+function _isString(value: unknown, key?: string): ValidationError | undefined {
   if (typeof value === "string") {
     return;
   }
@@ -61,7 +63,10 @@ function isString(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isNotEmpty(value: unknown, key?: string): ValidationError | undefined {
+function _isNotEmpty(
+  value: unknown,
+  key?: string,
+): ValidationError | undefined {
   if (value !== undefined && value !== null && value !== "") {
     return;
   }
@@ -70,7 +75,7 @@ function isNotEmpty(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isEmpty(value: unknown, key?: string): ValidationError | undefined {
+function _isEmpty(value: unknown, key?: string): ValidationError | undefined {
   if (value === "" || value === undefined || value === null) {
     return;
   }
@@ -79,7 +84,7 @@ function isEmpty(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isEquals(to: string): Validator {
+function _isEquals(to: string): Validator {
   return (value: unknown, key?: string) => {
     if (value === to) {
       return;
@@ -90,7 +95,7 @@ function isEquals(to: string): Validator {
   };
 }
 
-function isNotEquals(to: string): Validator {
+function _isNotEquals(to: string): Validator {
   return (value: unknown, key?: string) => {
     if (value !== to) {
       return;
@@ -101,7 +106,7 @@ function isNotEquals(to: string): Validator {
   };
 }
 
-function startsWith(needle: string): Validator {
+function _startsWith(needle: string): Validator {
   return (value: unknown, key?: string) => {
     const startsWith = new RegExp(`^${needle}`);
     if (startsWith.test(<string> value)) {
@@ -113,7 +118,7 @@ function startsWith(needle: string): Validator {
   };
 }
 
-function endsWith(needle: string): Validator {
+function _endsWith(needle: string): Validator {
   const endsWith = new RegExp(`${needle}$`);
   return (value: unknown, key?: string) => {
     if (endsWith.test(<string> value)) {
@@ -124,7 +129,8 @@ function endsWith(needle: string): Validator {
     };
   };
 }
-function isRegex(regex: RegExp): Validator {
+
+function _isRegex(regex: RegExp): Validator {
   return (value: unknown, key?: string) => {
     if (typeof value === "string" && regex.test(<string> value)) {
       return;
