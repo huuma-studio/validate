@@ -1,4 +1,5 @@
 import {
+  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
@@ -10,8 +11,15 @@ export class BooleanSchema<T = boolean> extends PrimitiveSchema<
   BooleanSchema<RequiredType<T>>,
   BooleanSchema<OptionalType<T>>
 > {
+  #jsonSchema: JSONSchema;
+
   constructor() {
-    super("boolean");
+    const type = "boolean";
+    const jsonSchema: JSONSchema = {
+      type,
+    };
+    super(type, jsonSchema);
+    this.#jsonSchema = jsonSchema;
     this.validator(_isBoolean);
   }
 

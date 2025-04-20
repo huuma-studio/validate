@@ -1,4 +1,6 @@
 import {
+  isJsonSchemaType,
+  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
@@ -12,8 +14,21 @@ export class LiteralSchema<
   LiteralSchema<RequiredType<T>>,
   LiteralSchema<OptionalType<T>>
 > {
+  #jsonSchema?: JSONSchema;
   constructor(value: RequiredType<T>) {
-    super(`literal:${value}`);
+    const typeOfValue = typeof value;
+    if (
+      !isJsonSchemaType(typeOfValue)
+    ) {
+      throw new Error(
+        `LiteralSchema cannot be created with a ${typeOfValue}`,
+      );
+    }
+    const jsonSchema: JSONSchema = {
+      type: typeOfValue,
+      const: value,
+    };
+    super(`literal:${value}`, jsonSchema);
     this.validator(_isLiteral(value));
   }
 }

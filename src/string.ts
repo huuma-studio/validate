@@ -1,4 +1,5 @@
 import {
+  type JSONSchema,
   PrimitiveSchema,
   type ValidationError,
   type Validator,
@@ -9,8 +10,13 @@ export class StringSchema<T = string> extends PrimitiveSchema<
   StringSchema<string>,
   StringSchema<string | undefined>
 > {
+  readonly #jsonSchema: JSONSchema;
   constructor() {
-    super("string");
+    const jsonSchema: JSONSchema = {
+      type: "string",
+    };
+    super("string", jsonSchema);
+    this.#jsonSchema = jsonSchema;
     this.validator(_isString);
   }
 

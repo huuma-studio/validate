@@ -1,6 +1,8 @@
 import {
   BaseSchema,
   isDefined,
+  type JSONSchema,
+  type Property,
   required,
   type Schema,
   type Validation,
@@ -24,6 +26,8 @@ export class ObjectSchema<
 > extends BaseSchema<SchemaType<T>> {
   #schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
     : never;
+  #jsonSchema: JSONSchema;
+  #property: Property;
 
   get schema(): T extends KeyableSchema<T extends undefined ? never : T> ? T
     : never {
@@ -35,26 +39,44 @@ export class ObjectSchema<
       : never,
   ) {
     const type = "object";
-    super(type);
+    const jsonSchema: JSONSchema = {
+      type,
+      properties: Object.entries(schema).reduce((acc, [key, value]) => {
+        acc[key] = (<Schema<unknown>> value)?.jsonSchema();
+        return acc;
+      }, {} as Record<string, JSONSchema>),
+      required: Object.entries(schema).reduce((acc, [key, value]) => {
+        if ((<Schema<unknown>> value)?.isRequired()) {
+          acc.push(key);
+        }
+        return acc;
+      }, [] as string[]),
+    };
+    const property: Property = {
+      isRequired: true,
+      validators: [required(type), _isObject],
+    };
+    super(type, jsonSchema, property);
     this.#schema = schema;
-    this.validator(required(type)).validator(_isObject);
+    this.#jsonSchema = jsonSchema;
+    this.#property = property;
   }
 
   required(): ObjectSchema<T> {
-    this.property.isRequired = true;
+    this.#property.isRequired = true;
     return this;
   }
 
   optional(): ObjectSchema<T | undefined> {
-    this.property.isRequired = false;
+    this.#property.isRequired = false;
     return <ObjectSchema<T | undefined>> this;
   }
 
   validate(toValidate: unknown, key?: string): Validation<SchemaType<T>> {
     const errors: ValidationError[] = [];
     const schemaType: Record<string, unknown> = {};
-    if (this.property.isRequired || isDefined(toValidate)) {
-      for (const validator of this.property.validators) {
+    if (this.#property.isRequired || isDefined(toValidate)) {
+      for (const validator of this.#property.validators) {
         const result = validator(toValidate, key);
         if (result) errors.push(result);
       }

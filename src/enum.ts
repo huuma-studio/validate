@@ -1,4 +1,6 @@
 import {
+  isJsonSchemaType,
+  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
@@ -12,9 +14,23 @@ export class EnumSchema<
   EnumSchema<RequiredType<T>>,
   EnumSchema<OptionalType<T>>
 > {
+  #jsonSchema: JSONSchema;
   constructor(private enums: RequiredType<T>[]) {
-    super(`enum:${enums.join(",")}`);
+    const jsonSchema: JSONSchema = {
+      oneOf: enums.map((e) => {
+        const typeOf = typeof e;
+        if (isJsonSchemaType(typeOf)) {
+          return {
+            type: typeOf,
+          };
+        }
+        throw new Error(`Invalid enum type ${e}`);
+      }),
+    };
+    super(`enum:${enums.join(",")}`, jsonSchema);
     this.validator(_isEnum(enums));
+
+    this.#jsonSchema = jsonSchema;
   }
 }
 

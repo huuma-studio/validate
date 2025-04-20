@@ -30,19 +30,21 @@ export type RequiredType<T> = T extends undefined ? never
 export interface Schema<T> {
   validate(value: unknown, key?: string): Validation<T>;
   infer: T;
+  jsonSchema(): JSONSchema;
+  isRequired(): boolean;
 }
 
 export abstract class BaseSchema<T> implements Schema<T> {
-  property: Property = {
-    validators: [],
-    isRequired: true,
-  };
+  readonly #jsonSchema: JSONSchema;
+  readonly #type: string;
+  readonly #property: Property;
 
   readonly infer!: T;
-  #type: string;
 
-  constructor(type: string) {
+  constructor(type: string, jsonSchema: JSONSchema, property: Property) {
     this.#type = type;
+    this.#jsonSchema = jsonSchema;
+    this.#property = property;
   }
 
   toString(): string {
@@ -50,7 +52,7 @@ export abstract class BaseSchema<T> implements Schema<T> {
   }
 
   protected validator(validator: Validator): this {
-    this.property.validators.push(validator);
+    this.#property.validators.push(validator);
     return this;
   }
 
@@ -63,12 +65,22 @@ export abstract class BaseSchema<T> implements Schema<T> {
     }
     return validated;
   }
+
+  jsonSchema(): JSONSchema {
+    return this.#jsonSchema;
+  }
+
+  isRequired(): boolean {
+    return this.#property.isRequired;
+  }
 }
 
 export abstract class PrimitiveSchema<T, R, O> extends BaseSchema<T> {
-  constructor(type: string) {
-    super(type);
-    this.property.validators = [required(type)];
+  readonly #property: Property;
+  constructor(type: string, jsonSchema: JSONSchema) {
+    const property = { validators: [required(type)], isRequired: true };
+    super(type, jsonSchema, property);
+    this.#property = property;
   }
 
   custom(validator: Validator): this {
@@ -77,20 +89,20 @@ export abstract class PrimitiveSchema<T, R, O> extends BaseSchema<T> {
   }
 
   required(): R {
-    this.property.isRequired = true;
+    this.#property.isRequired = true;
     return <R> (<unknown> this);
   }
 
   optional(): O {
-    this.property.isRequired = false;
+    this.#property.isRequired = false;
     return <O> (<unknown> this);
   }
 
   validate(value: unknown, key?: string): Validation<T> {
     const errors: ValidationError[] = [];
 
-    if (this.property.isRequired || isDefined(value)) {
-      for (const validator of this.property.validators) {
+    if (this.#property.isRequired || isDefined(value)) {
+      for (const validator of this.#property.validators) {
         const result = validator(value, key);
         if (result) errors.push(result);
       }
@@ -133,3 +145,30 @@ export class ValidationException extends Error {
     super(JSON.stringify(errors));
   }
 }
+
+export const jsonSchemaTypes = [
+  "string",
+  "number",
+  "object",
+  "array",
+  "boolean",
+  "null",
+] as const;
+
+// deno-lint-ignore no-explicit-any
+export function isJsonSchemaType(type: any): type is JSONSchemaTypes {
+  return jsonSchemaTypes.includes(type);
+}
+
+export type JSONSchemaTypes = typeof jsonSchemaTypes[number];
+
+export type JSONSchema = {
+  type?: JSONSchemaTypes | JSONSchemaTypes[];
+  properties?: Record<string, JSONSchema>;
+  required?: string[];
+  items?: JSONSchema | JSONSchema[];
+  oneOf?: JSONSchema[];
+  const?: unknown;
+  format?: string;
+  pattern?: string;
+};

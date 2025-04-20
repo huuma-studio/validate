@@ -1,4 +1,5 @@
 import {
+  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
@@ -19,7 +20,12 @@ export class UuidSchema<T = string> extends PrimitiveSchema<
   UuidSchema<OptionalType<T>>
 > {
   constructor(version?: Version) {
-    super("uuid");
+    const jsonSchema: JSONSchema = {
+      type: "string",
+      format: "uuid",
+      pattern: patterns[version || "all"].source,
+    };
+    super("uuid", jsonSchema);
     this.validator(_isUuid(version));
   }
 }

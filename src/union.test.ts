@@ -4,6 +4,7 @@ import { StringSchema } from "./string.ts";
 import { NumberSchema } from "./number.ts";
 import { BooleanSchema } from "./boolean.ts";
 import { UnionSchema } from "./union.ts";
+import { assertThrows } from "@std/assert";
 
 // Define error messages to match those from underlying schemas
 const stringTypeMessage = {
@@ -208,18 +209,15 @@ Deno.test("Union Schema Validation: with identical types but different constrain
 
 Deno.test("Union Schema Validation: broken schema", () => {
   // Testing a schema with a bug to check error handling
-  const badSchema = new UnionSchema([
-    // @ts-ignore - Intentionally test with a non-schema object
-    {
-      validate: () => ({
-        value: undefined,
-        errors: [{ message: "Invalid schema" }],
-      }),
-    },
-  ]);
-
-  // Pass a value to the broken schema
-  const errors = badSchema.validate("test").errors!;
-  // With BaseSchema check, broken schema should be ignored
-  assertEquals(errors.length, 0);
+  assertThrows(() => {
+    new UnionSchema([
+      // @ts-ignore - Intentionally test with a non-schema object
+      {
+        validate: () => ({
+          value: undefined,
+          errors: [{ message: "Invalid schema" }],
+        }),
+      },
+    ]);
+  });
 });

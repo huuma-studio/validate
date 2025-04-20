@@ -317,3 +317,9 @@ Deno.test("String Schema Validation: 'regex'", () => {
   assertArrayIncludes(regex.validate([]).errors!, [regexMessage]);
   assertArrayIncludes(regex.validate(() => {}).errors!, [regexMessage]);
 });
+
+Deno.test("Basic JSON Schema", () => {
+  const schema = new StringSchema();
+  const jsonSchema = schema.jsonSchema();
+  assertEquals(jsonSchema, { type: "string" });
+});

@@ -1,5 +1,9 @@
 import {
   BaseSchema,
+  isDefined,
+  type JSONSchema,
+  type Property,
+  required,
   type Schema,
   type Validation,
   type ValidationError,
@@ -12,24 +16,44 @@ export class UnionSchema<
     T[number] extends Schema<unknown> ? T[number] : never
   >,
 > extends BaseSchema<SchemaType<T[number]>> {
-  private schemas: T;
+  #schemas: T;
+  #property: Property;
 
   constructor(schemas: T) {
-    super(`union:${schemas.map((s) => s?.toString()).join(",")}`);
-    this.schemas = schemas;
+    const type = `union:${schemas.map((s) => s?.toString()).join(",")}`;
+    const jsonSchema: JSONSchema = {
+      oneOf: schemas.map((s) => (<Schema<unknown>> s).jsonSchema()),
+    };
+    const property: Property = {
+      isRequired: true,
+      validators: [required(type)],
+    };
+    super(
+      type,
+      jsonSchema,
+      property,
+    );
+    this.#schemas = schemas;
+    this.#property = property;
   }
 
   validate(value: unknown): Validation<SchemaType<T[number]>> {
     const validations: Validation<unknown>[] = [];
-    for (const schema of this.schemas) {
-      if (schema instanceof BaseSchema) {
-        validations.push(schema.validate(value));
+
+    if (this.#property.isRequired || isDefined(value)) {
+      for (const schema of this.#schemas) {
+        if (schema instanceof BaseSchema) {
+          validations.push(schema.validate(value));
+        }
       }
     }
 
-    const passedValidations = validations.filter((v) => !v.errors?.length);
-
-    if (passedValidations.length) {
+    if (
+      // At least 1 validation passes
+      validations.filter((v) => !v.errors?.length).length ||
+      // or no validation fails (in case its not required)
+      validations.filter((v) => v.errors?.length).length === 0
+    ) {
       return { value: <SchemaType<T[number]>> value, errors: undefined };
     }
 

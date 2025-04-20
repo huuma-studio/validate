@@ -1,4 +1,5 @@
 import {
+  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
@@ -11,24 +12,35 @@ export class UrlSchema<T = string> extends PrimitiveSchema<
   UrlSchema<RequiredType<T>>,
   UrlSchema<OptionalType<T>>
 > {
+  #jsonSchema: JSONSchema;
+
   constructor() {
-    super("url");
-    this.validator(isUrl);
+    const jsonSchema: JSONSchema = {
+      type: "string",
+      format: "uri",
+    };
+    super("url", jsonSchema);
+    this.validator(_isUrl);
+    this.#jsonSchema = jsonSchema;
   }
 
   http(secure = true): UrlSchema<T> {
-    this.validator(isHttp(secure));
+    this.validator(_isHttp(secure));
     return this;
   }
 
   protocol(protocol: string): UrlSchema<T> {
-    this.validator(isProtocol(protocol));
+    this.validator(_isProtocol(protocol));
     return this;
   }
 }
 
-function isUrl(value: unknown, key?: string): ValidationError | undefined {
-  if (_isUrl(value) instanceof URL) {
+export function url<T = string>(): UrlSchema<T> {
+  return new UrlSchema<T>();
+}
+
+function _isUrl(value: unknown, key?: string): ValidationError | undefined {
+  if (_parseUrl(value) instanceof URL) {
     return;
   }
   return {
@@ -36,9 +48,9 @@ function isUrl(value: unknown, key?: string): ValidationError | undefined {
   };
 }
 
-function isProtocol(protocol: string): Validator {
+function _isProtocol(protocol: string): Validator {
   return (value: unknown, key?: string): ValidationError | undefined => {
-    if (_isUrl(value)?.protocol === protocol) {
+    if (_parseUrl(value)?.protocol === protocol) {
       return;
     }
     return {
@@ -47,10 +59,10 @@ function isProtocol(protocol: string): Validator {
   };
 }
 
-function isHttp(secure: boolean): Validator {
+function _isHttp(secure: boolean): Validator {
   return (value: unknown, key?: string): ValidationError | undefined => {
     const allowed = secure ? ["https:"] : ["http:", "https:"];
-    const protocol = _isUrl(value)?.protocol;
+    const protocol = _parseUrl(value)?.protocol;
     if (protocol && allowed.includes(protocol)) {
       return;
     }
@@ -64,11 +76,7 @@ function isHttp(secure: boolean): Validator {
   };
 }
 
-export function url<T = string>(): UrlSchema<T> {
-  return new UrlSchema<T>();
-}
-
-function _isUrl(value: unknown): URL | undefined {
+function _parseUrl(value: unknown): URL | undefined {
   try {
     return new URL(<string> value);
   } catch {

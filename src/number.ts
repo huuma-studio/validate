@@ -1,4 +1,5 @@
 import {
+  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
@@ -11,9 +12,15 @@ export class NumberSchema<T = number> extends PrimitiveSchema<
   NumberSchema<RequiredType<T>>,
   NumberSchema<OptionalType<T>>
 > {
+  #jsonSchema: JSONSchema;
   constructor() {
-    super("number");
-    this.property.validators.push(_isNumber);
+    const type = "number";
+    const jsonSchema: JSONSchema = {
+      type,
+    };
+    super(type, jsonSchema);
+    this.validator(_isNumber);
+    this.#jsonSchema = jsonSchema;
   }
 
   positive(): this {

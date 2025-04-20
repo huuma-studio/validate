@@ -1,6 +1,8 @@
 import {
   BaseSchema,
   isDefined,
+  type JSONSchema,
+  type Property,
   required,
   type Schema,
   type Validation,
@@ -10,19 +12,31 @@ import {
 export class ArraySchema<
   T extends Schema<unknown> | undefined,
 > extends BaseSchema<T extends Schema<unknown> ? T["infer"][] : undefined> {
+  #jsonSchema: JSONSchema;
+  #property: Property;
   constructor(private schema: T extends undefined ? never : T) {
     const type = "array";
-    super(type);
-    this.validator(required(type)).validator(_isArray);
+    const jsonSchema: JSONSchema = {
+      type,
+      items: schema.jsonSchema(),
+    };
+    const property: Property = {
+      isRequired: true,
+      validators: [required(type), _isArray],
+    };
+
+    super(type, jsonSchema, property);
+    this.#jsonSchema = jsonSchema;
+    this.#property = property;
   }
 
   required(): ArraySchema<T> {
-    this.property.isRequired = true;
+    this.#property.isRequired = true;
     return this;
   }
 
   optional(): ArraySchema<T | undefined> {
-    this.property.isRequired = false;
+    this.#property.isRequired = false;
     return this;
   }
 
@@ -32,8 +46,8 @@ export class ArraySchema<
   ): Validation<T extends Schema<unknown> ? T["infer"][] : undefined> {
     const errors: ValidationError[] = [];
 
-    if (this.property.isRequired || isDefined(toValidate)) {
-      for (const validator of this.property.validators) {
+    if (this.#property.isRequired || isDefined(toValidate)) {
+      for (const validator of this.#property.validators) {
         const result = validator(toValidate, key);
         if (result) {
           errors.push(result);
