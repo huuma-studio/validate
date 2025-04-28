@@ -1,5 +1,4 @@
 import {
-  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
@@ -7,15 +6,21 @@ import {
   type Validator,
 } from "./schema.ts";
 
+type UrlJSONSchema = {
+  type: "string";
+  format: "uri";
+};
+
 export class UrlSchema<T = string> extends PrimitiveSchema<
   T,
   UrlSchema<RequiredType<T>>,
-  UrlSchema<OptionalType<T>>
+  UrlSchema<OptionalType<T>>,
+  UrlJSONSchema
 > {
-  #jsonSchema: JSONSchema;
+  #jsonSchema: UrlJSONSchema;
 
   constructor() {
-    const jsonSchema: JSONSchema = {
+    const jsonSchema: UrlJSONSchema = {
       type: "string",
       format: "uri",
     };

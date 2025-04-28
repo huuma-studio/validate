@@ -1,10 +1,15 @@
 import {
-  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
   type ValidationError,
 } from "./schema.ts";
+
+type UuidJsonSchema = {
+  type: "string";
+  format: "uuid";
+  pattern: string;
+};
 
 export type Version = "1" | "4" | "all";
 
@@ -17,10 +22,11 @@ const patterns: Record<Version, RegExp> = {
 export class UuidSchema<T = string> extends PrimitiveSchema<
   T,
   UuidSchema<RequiredType<T>>,
-  UuidSchema<OptionalType<T>>
+  UuidSchema<OptionalType<T>>,
+  UuidJsonSchema
 > {
   constructor(version?: Version) {
-    const jsonSchema: JSONSchema = {
+    const jsonSchema: UuidJsonSchema = {
       type: "string",
       format: "uuid",
       pattern: patterns[version || "all"].source,

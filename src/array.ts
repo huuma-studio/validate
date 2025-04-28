@@ -1,7 +1,6 @@
 import {
   BaseSchema,
   isDefined,
-  type JSONSchema,
   type Property,
   required,
   type Schema,
@@ -9,16 +8,26 @@ import {
   type ValidationError,
 } from "./schema.ts";
 
+type ArrayJSONSchema<T extends Schema<unknown> | undefined> = {
+  type: "array";
+  items: T extends BaseSchema<infer U> ? ReturnType<T["jsonSchema"]>
+    : never;
+};
+
 export class ArraySchema<
   T extends Schema<unknown> | undefined,
-> extends BaseSchema<T extends Schema<unknown> ? T["infer"][] : undefined> {
-  #jsonSchema: JSONSchema;
+> extends BaseSchema<
+  T extends Schema<unknown> ? T["infer"][] : undefined,
+  ArrayJSONSchema<T>
+> {
+  #jsonSchema: ArrayJSONSchema<T>;
   #property: Property;
   constructor(private schema: T extends undefined ? never : T) {
     const type = "array";
-    const jsonSchema: JSONSchema = {
+    const jsonSchema: ArrayJSONSchema<T> = {
       type,
-      items: schema.jsonSchema(),
+      // deno-lint-ignore no-explicit-any
+      items: <any> schema.jsonSchema(),
     };
     const property: Property = {
       isRequired: true,

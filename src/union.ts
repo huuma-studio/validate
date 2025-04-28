@@ -1,7 +1,6 @@
 import {
   BaseSchema,
   isDefined,
-  type JSONSchema,
   type Property,
   required,
   type Schema,
@@ -11,18 +10,30 @@ import {
 
 type SchemaType<S> = S extends Schema<infer T> ? T : never;
 
+type UnionJSONSchema<T extends ReadonlyArray<Schema<unknown>>> = {
+  oneOf: T extends Array<Schema<infer U>>
+    ? Array<ReturnType<T[number]["jsonSchema"]>>
+    : never;
+};
+
 export class UnionSchema<
   T extends ReadonlyArray<
     T[number] extends Schema<unknown> ? T[number] : never
   >,
-> extends BaseSchema<SchemaType<T[number]>> {
+> extends BaseSchema<SchemaType<T[number]>, UnionJSONSchema<T>> {
   #schemas: T;
   #property: Property;
 
   constructor(schemas: T) {
     const type = `union:${schemas.map((s) => s?.toString()).join(",")}`;
-    const jsonSchema: JSONSchema = {
-      oneOf: schemas.map((s) => (<Schema<unknown>> s).jsonSchema()),
+    const jsonSchema: UnionJSONSchema<T> = {
+      oneOf: schemas.map((s) => {
+        if (s instanceof BaseSchema) {
+          return s.jsonSchema();
+        }
+        throw Error("Schema not supported");
+        // deno-lint-ignore no-explicit-any
+      }) as any,
     };
     const property: Property = {
       isRequired: true,

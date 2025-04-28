@@ -1,31 +1,28 @@
 import {
-  isJsonSchemaType,
-  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
   type Validator,
 } from "./schema.ts";
 
+type EnumJSONSchema<T> = {
+  enum: T extends undefined ? never : T[];
+};
+
 export class EnumSchema<
   T extends string | number | undefined,
 > extends PrimitiveSchema<
   T extends undefined ? undefined : T,
   EnumSchema<RequiredType<T>>,
-  EnumSchema<OptionalType<T>>
+  EnumSchema<OptionalType<T>>,
+  EnumJSONSchema<T>
 > {
-  #jsonSchema: JSONSchema;
-  constructor(private enums: RequiredType<T>[]) {
-    const jsonSchema: JSONSchema = {
-      oneOf: enums.map((e) => {
-        const typeOf = typeof e;
-        if (isJsonSchemaType(typeOf)) {
-          return {
-            type: typeOf,
-          };
-        }
-        throw new Error(`Invalid enum type ${e}`);
-      }),
+  #jsonSchema: EnumJSONSchema<T>;
+  constructor(enums: RequiredType<T>[]) {
+    const jsonSchema: EnumJSONSchema<T> = {
+      enum: (enums.map((e) => {
+        return <T> e;
+      }) as T extends undefined ? never : T[]),
     };
     super(`enum:${enums.join(",")}`, jsonSchema);
     this.validator(_isEnum(enums));

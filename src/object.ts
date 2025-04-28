@@ -21,9 +21,34 @@ type SchemaType<T> = {
   [P in keyof T]: T[P] extends Schema<infer U> ? T[P]["infer"] : never;
 };
 
+type RequiredKeysJSONSchema<T> =
+  & {
+    [K in keyof T]: T[K] extends BaseSchema<infer U>
+      ? undefined extends BaseSchema<U>["infer"] ? never : K
+      : never;
+  }[keyof T]
+  & string;
+
+type KeyableJSONSchema<T> =
+  & {
+    [P in keyof T]: T[P] extends BaseSchema<infer U>
+      ? (undefined extends T[P]["infer"]
+        ? (undefined | ReturnType<T[P]["jsonSchema"]>)
+        : ReturnType<T[P]["jsonSchema"]>)
+      : never;
+  }
+  & Record<string, JSONSchema>;
+
+interface ObjectJSONSchema<T> {
+  type: "object";
+  properties: KeyableJSONSchema<T>;
+  required: RequiredKeysJSONSchema<T> extends never ? undefined
+    : RequiredKeysJSONSchema<T>[];
+}
+
 export class ObjectSchema<
   T extends KeyableSchema<T | undefined>,
-> extends BaseSchema<SchemaType<T>> {
+> extends BaseSchema<SchemaType<T>, ObjectJSONSchema<T>> {
   #schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
     : never;
   #jsonSchema: JSONSchema;

@@ -1,5 +1,4 @@
 import {
-  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
@@ -7,15 +6,20 @@ import {
   type Validator,
 } from "./schema.ts";
 
+type NumberJSONSchema = {
+  type: "number";
+};
+
 export class NumberSchema<T = number> extends PrimitiveSchema<
   T,
   NumberSchema<RequiredType<T>>,
-  NumberSchema<OptionalType<T>>
+  NumberSchema<OptionalType<T>>,
+  NumberJSONSchema
 > {
-  #jsonSchema: JSONSchema;
+  #jsonSchema: NumberJSONSchema;
   constructor() {
     const type = "number";
-    const jsonSchema: JSONSchema = {
+    const jsonSchema: NumberJSONSchema = {
       type,
     };
     super(type, jsonSchema);

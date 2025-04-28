@@ -7,12 +7,18 @@ import {
   type Validator,
 } from "./schema.ts";
 
+type LiteralJSONSchema<T> = {
+  type: T extends string ? "string" : T extends number ? "number" : never;
+  value: T;
+};
+
 export class LiteralSchema<
   T extends string | number | undefined,
 > extends PrimitiveSchema<
   T extends undefined ? never : T,
   LiteralSchema<RequiredType<T>>,
-  LiteralSchema<OptionalType<T>>
+  LiteralSchema<OptionalType<T>>,
+  LiteralJSONSchema<T>
 > {
   #jsonSchema?: JSONSchema;
   constructor(value: RequiredType<T>) {
@@ -21,7 +27,7 @@ export class LiteralSchema<
       !isJsonSchemaType(typeOfValue)
     ) {
       throw new Error(
-        `LiteralSchema cannot be created with a ${typeOfValue}`,
+        `LiteralSchema cannot be created with type of ${typeOfValue}`,
       );
     }
     const jsonSchema: JSONSchema = {

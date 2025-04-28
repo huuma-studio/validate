@@ -1,21 +1,25 @@
 import {
-  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
   type ValidationError,
 } from "./schema.ts";
 
+type BooleanJSONSchema = {
+  type: "boolean";
+};
+
 export class BooleanSchema<T = boolean> extends PrimitiveSchema<
   T,
   BooleanSchema<RequiredType<T>>,
-  BooleanSchema<OptionalType<T>>
+  BooleanSchema<OptionalType<T>>,
+  BooleanJSONSchema
 > {
-  #jsonSchema: JSONSchema;
+  #jsonSchema: BooleanJSONSchema;
 
   constructor() {
     const type = "boolean";
-    const jsonSchema: JSONSchema = {
+    const jsonSchema: BooleanJSONSchema = {
       type,
     };
     super(type, jsonSchema);

@@ -5,7 +5,7 @@ import {
   type ValidationError,
 } from "./schema.ts";
 
-export class UndefinedSchema extends BaseSchema<undefined> {
+export class UndefinedSchema extends BaseSchema<undefined, { type: "null" }> {
   #property: Property;
   constructor() {
     const type = "undefined";

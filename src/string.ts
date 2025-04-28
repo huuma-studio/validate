@@ -1,18 +1,22 @@
 import {
-  type JSONSchema,
   PrimitiveSchema,
   type ValidationError,
   type Validator,
 } from "./schema.ts";
 
+type StringJSONSchema = {
+  type: "string";
+};
+
 export class StringSchema<T = string> extends PrimitiveSchema<
   T,
   StringSchema<string>,
-  StringSchema<string | undefined>
+  StringSchema<string | undefined>,
+  StringJSONSchema
 > {
-  readonly #jsonSchema: JSONSchema;
+  readonly #jsonSchema: StringJSONSchema;
   constructor() {
-    const jsonSchema: JSONSchema = {
+    const jsonSchema: StringJSONSchema = {
       type: "string",
     };
     super("string", jsonSchema);
