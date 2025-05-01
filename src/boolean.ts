@@ -5,7 +5,7 @@ import {
   type ValidationError,
 } from "./schema.ts";
 
-type BooleanJSONSchema = {
+export type BooleanJSONSchema = {
   type: "boolean";
 };
 

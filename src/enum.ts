@@ -5,7 +5,7 @@ import {
   type Validator,
 } from "./schema.ts";
 
-type EnumJSONSchema<T> = {
+export type EnumJSONSchema<T> = {
   enum: T extends undefined ? never : T[];
 };
 

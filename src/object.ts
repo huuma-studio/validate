@@ -39,7 +39,7 @@ type KeyableJSONSchema<T> =
   }
   & Record<string, JSONSchema>;
 
-interface ObjectJSONSchema<T> {
+export interface ObjectJSONSchema<T> {
   type: "object";
   properties: KeyableJSONSchema<T>;
   required: RequiredKeysJSONSchema<T> extends never ? undefined

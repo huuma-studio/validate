@@ -8,7 +8,7 @@ import {
   type ValidationError,
 } from "./schema.ts";
 
-type ArrayJSONSchema<T extends Schema<unknown> | undefined> = {
+export type ArrayJSONSchema<T extends Schema<unknown> | undefined> = {
   type: "array";
   items: T extends BaseSchema<infer U> ? ReturnType<T["jsonSchema"]>
     : never;

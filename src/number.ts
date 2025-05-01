@@ -6,7 +6,7 @@ import {
   type Validator,
 } from "./schema.ts";
 
-type NumberJSONSchema = {
+export type NumberJSONSchema = {
   type: "number";
 };
 

@@ -6,7 +6,7 @@ import {
   type Validator,
 } from "./schema.ts";
 
-type UrlJSONSchema = {
+export type UrlJSONSchema = {
   type: "string";
   format: "uri";
 };

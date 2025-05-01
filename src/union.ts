@@ -10,7 +10,7 @@ import {
 
 type SchemaType<S> = S extends Schema<infer T> ? T : never;
 
-type UnionJSONSchema<T extends ReadonlyArray<Schema<unknown>>> = {
+export type UnionJSONSchema<T extends ReadonlyArray<Schema<unknown>>> = {
   oneOf: T extends Array<Schema<infer U>>
     ? Array<ReturnType<T[number]["jsonSchema"]>>
     : never;

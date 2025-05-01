@@ -4,7 +4,7 @@ import {
   type Validator,
 } from "./schema.ts";
 
-type StringJSONSchema = {
+export type StringJSONSchema = {
   type: "string";
 };
 

@@ -5,7 +5,7 @@ import {
   type ValidationError,
 } from "./schema.ts";
 
-type UuidJsonSchema = {
+export type UuidJsonSchema = {
   type: "string";
   format: "uuid";
   pattern: string;

@@ -1,15 +1,13 @@
 import {
-  isJsonSchemaType,
-  type JSONSchema,
   type OptionalType,
   PrimitiveSchema,
   type RequiredType,
   type Validator,
 } from "./schema.ts";
 
-type LiteralJSONSchema<T> = {
+export type LiteralJSONSchema<T> = {
   type: T extends string ? "string" : T extends number ? "number" : never;
-  value: T;
+  const: T;
 };
 
 export class LiteralSchema<
@@ -20,18 +18,20 @@ export class LiteralSchema<
   LiteralSchema<OptionalType<T>>,
   LiteralJSONSchema<T>
 > {
-  #jsonSchema?: JSONSchema;
+  #jsonSchema?: LiteralJSONSchema<T>;
   constructor(value: RequiredType<T>) {
     const typeOfValue = typeof value;
     if (
-      !isJsonSchemaType(typeOfValue)
+      typeOfValue !== "string" &&
+      typeOfValue !== "number"
     ) {
       throw new Error(
         `LiteralSchema cannot be created with type of ${typeOfValue}`,
       );
     }
-    const jsonSchema: JSONSchema = {
-      type: typeOfValue,
+    const jsonSchema: LiteralJSONSchema<T> = {
+      // deno-lint-ignore no-explicit-any
+      type: <any> typeOfValue,
       const: value,
     };
     super(`literal:${value}`, jsonSchema);
