@@ -1,6 +1,6 @@
 import { assertArrayIncludes } from "@std/assert/array-includes";
-import { ObjectSchema } from "./object.ts";
-import { StringSchema } from "./string.ts";
+import { object } from "./object.ts";
+import { string } from "./string.ts";
 import { assertEquals } from "@std/assert/equals";
 
 const requiredMessage = { message: `"object" is required` };
@@ -16,13 +16,13 @@ const nameNotStringMessage = {
 };
 
 Deno.test("Object Schema Validation: 'toString'", () => {
-  const isObject = new ObjectSchema({});
+  const isObject = object({});
   assertEquals(isObject.toString(), "object");
 });
 
 Deno.test("Object Schema Validation: 'isObject'", () => {
-  const isObject = new ObjectSchema({
-    name: new StringSchema(),
+  const isObject = object({
+    name: string(),
   })
     .optional()
     .required();
@@ -77,8 +77,8 @@ Deno.test("Object Schema Validation: 'isObject'", () => {
 });
 
 Deno.test("Object Schema Validation: 'required'", () => {
-  const required = new ObjectSchema({
-    name: new StringSchema(),
+  const required = object({
+    name: string(),
   });
 
   assertArrayIncludes(required.validate(undefined).errors!, [requiredMessage]);
@@ -120,8 +120,8 @@ Deno.test("Object Schema Validation: 'required'", () => {
 });
 
 Deno.test("Object Schema Validation: 'optional'", () => {
-  const optional = new ObjectSchema({
-    name: new StringSchema(),
+  const optional = object({
+    name: string(),
   }).optional();
 
   assertEquals(optional.validate(undefined).errors, undefined);

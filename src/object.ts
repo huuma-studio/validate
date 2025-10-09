@@ -24,7 +24,8 @@ type SchemaType<T> = {
 type RequiredKeysJSONSchema<T> =
   & {
     [K in keyof T]: T[K] extends BaseSchema<infer U>
-      ? undefined extends BaseSchema<U>["infer"] ? never : K
+      ? undefined extends BaseSchema<U>["infer"] ? never
+      : K
       : never;
   }[keyof T]
   & string;
@@ -32,9 +33,9 @@ type RequiredKeysJSONSchema<T> =
 type KeyableJSONSchema<T> =
   & {
     [P in keyof T]: T[P] extends BaseSchema<infer U>
-      ? (undefined extends T[P]["infer"]
-        ? (undefined | ReturnType<T[P]["jsonSchema"]>)
-        : ReturnType<T[P]["jsonSchema"]>)
+      ? undefined extends T[P]["infer"]
+        ? undefined | ReturnType<T[P]["jsonSchema"]>
+      : ReturnType<T[P]["jsonSchema"]>
       : never;
   }
   & Record<string, JSONSchema>;
@@ -49,8 +50,7 @@ export interface ObjectJSONSchema<T> {
 export class ObjectSchema<
   T extends KeyableSchema<T | undefined>,
 > extends BaseSchema<SchemaType<T>, ObjectJSONSchema<T>> {
-  #schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
-    : never;
+  #schema: T extends KeyableSchema<T extends undefined ? never : T> ? T : never;
   #jsonSchema: JSONSchema;
   #property: Property;
 
@@ -66,10 +66,13 @@ export class ObjectSchema<
     const type = "object";
     const jsonSchema: JSONSchema = {
       type,
-      properties: Object.entries(schema).reduce((acc, [key, value]) => {
-        acc[key] = (<Schema<unknown>> value)?.jsonSchema();
-        return acc;
-      }, {} as Record<string, JSONSchema>),
+      properties: Object.entries(schema).reduce(
+        (acc, [key, value]) => {
+          acc[key] = (<Schema<unknown>> value)?.jsonSchema();
+          return acc;
+        },
+        {} as Record<string, JSONSchema>,
+      ),
       required: Object.entries(schema).reduce((acc, [key, value]) => {
         if ((<Schema<unknown>> value)?.isRequired()) {
           acc.push(key);
@@ -99,8 +102,9 @@ export class ObjectSchema<
 
   validate(toValidate: unknown, key?: string): Validation<SchemaType<T>> {
     const errors: ValidationError[] = [];
-    const schemaType: Record<string, unknown> = {};
+    let schemaType: Record<string, unknown> | undefined = undefined;
     if (this.#property.isRequired || isDefined(toValidate)) {
+      schemaType = {};
       for (const validator of this.#property.validators) {
         const result = validator(toValidate, key);
         if (result) errors.push(result);
@@ -137,11 +141,8 @@ export class ObjectSchema<
 }
 
 export function object<T extends KeyableSchema<T | undefined>>(
-  schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
-    : never,
-): ObjectSchema<
-  T
-> {
+  schema: T extends KeyableSchema<T extends undefined ? never : T> ? T : never,
+): ObjectSchema<T> {
   return new ObjectSchema(schema);
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@huuma/validate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "exports": {
     ".": "./src/mod.ts",
     "./array": "./src/array.ts",
