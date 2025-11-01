@@ -23,6 +23,10 @@ export interface Property {
   isRequired: boolean;
 }
 
+export interface BaseProperty extends Property {
+  baseValidators: Validator[];
+}
+
 export type OptionalType<T> = T extends undefined ? T : T | undefined;
 export type RequiredType<T> = T extends undefined ? never
   : Exclude<T, undefined>;
@@ -38,11 +42,11 @@ export abstract class BaseSchema<T, J extends JSONSchema = JSONSchema>
   implements Schema<T, J> {
   readonly #jsonSchema: JSONSchema;
   readonly #type: string;
-  readonly #property: Property;
+  readonly #property: BaseProperty;
 
   readonly infer!: T;
 
-  constructor(type: string, jsonSchema: JSONSchema, property: Property) {
+  constructor(type: string, jsonSchema: JSONSchema, property: BaseProperty) {
     this.#type = type;
     this.#jsonSchema = jsonSchema;
     this.#property = property;
@@ -52,9 +56,14 @@ export abstract class BaseSchema<T, J extends JSONSchema = JSONSchema>
     return this.#type;
   }
 
+  protected abstract create(property: Property): this;
+
   protected validator(validator: Validator): this {
-    this.#property.validators.push(validator);
-    return this;
+    const property: Property = {
+      isRequired: this.#property.isRequired,
+      validators: [...this.#property.validators, validator],
+    };
+    return this.create(property);
   }
 
   abstract validate(value: unknown, key?: string): Validation<T>;
@@ -76,35 +85,56 @@ export abstract class BaseSchema<T, J extends JSONSchema = JSONSchema>
   }
 }
 
-export abstract class PrimitiveSchema<T, R, O, J extends JSONSchema>
-  extends BaseSchema<T, J> {
-  readonly #property: Property;
-  constructor(type: string, jsonSchema: JSONSchema) {
-    const property = { validators: [required(type)], isRequired: true };
+export abstract class PrimitiveSchema<
+  T,
+  R,
+  O,
+  J extends JSONSchema,
+> extends BaseSchema<T, J> {
+  readonly #property: BaseProperty;
+  constructor(
+    type: string,
+    jsonSchema: JSONSchema,
+    { isRequired, validators, baseValidators }: BaseProperty,
+  ) {
+    const property = {
+      validators: [...validators],
+      isRequired,
+      baseValidators: [required(type), ...baseValidators],
+    };
     super(type, jsonSchema, property);
     this.#property = property;
   }
 
   custom(validator: Validator): this {
-    this.validator(validator);
-    return this;
+    return this.validator(validator);
   }
 
   required(): R {
-    this.#property.isRequired = true;
-    return <R> (<unknown> this);
+    const property: Property = {
+      validators: [...this.#property.validators],
+      isRequired: true,
+    };
+    return <R> (<unknown> this.create(property));
   }
 
   optional(): O {
-    this.#property.isRequired = false;
-    return <O> (<unknown> this);
+    const property: Property = {
+      validators: [...this.#property.validators],
+      isRequired: false,
+    };
+    return <O> (<unknown> this.create(property));
   }
 
   validate(value: unknown, key?: string): Validation<T> {
     const errors: ValidationError[] = [];
 
     if (this.#property.isRequired || isDefined(value)) {
-      for (const validator of this.#property.validators) {
+      const validators = [
+        ...this.#property.baseValidators,
+        ...this.#property.validators,
+      ];
+      for (const validator of validators) {
         const result = validator(value, key);
         if (result) errors.push(result);
       }
@@ -162,7 +192,7 @@ export function isJsonSchemaType(type: any): type is JSONSchemaTypes {
   return jsonSchemaTypes.includes(type);
 }
 
-export type JSONSchemaTypes = typeof jsonSchemaTypes[number];
+export type JSONSchemaTypes = (typeof jsonSchemaTypes)[number];
 
 export type JSONSchema = {
   type?: JSONSchemaTypes | JSONSchemaTypes[];

@@ -19,7 +19,7 @@ Deno.test("Array Schema Validation: 'isArray'", () => {
   assertArrayIncludes(isArray.validate(null).errors!, [requiredMessage]);
 
   assertArrayIncludes(isArray.validate("").errors!, [notArrayMessage]);
-  assertArrayIncludes(isArray.validate("Cargo").errors!, [notArrayMessage]);
+  assertArrayIncludes(isArray.validate("Huuma").errors!, [notArrayMessage]);
 
   assertArrayIncludes(isArray.validate(-1).errors!, [notArrayMessage]);
   assertArrayIncludes(isArray.validate(0).errors!, [notArrayMessage]);
@@ -44,7 +44,7 @@ Deno.test("Array Schema Validation: 'required'", () => {
   assertArrayIncludes(required.validate(null).errors!, [requiredMessage]);
 
   assertArrayIncludes(required.validate("").errors!, [notArrayMessage]);
-  assertArrayIncludes(required.validate("Cargo").errors!, [notArrayMessage]);
+  assertArrayIncludes(required.validate("Huuma").errors!, [notArrayMessage]);
 
   assertArrayIncludes(required.validate(-1).errors!, [notArrayMessage]);
   assertArrayIncludes(required.validate(0).errors!, [notArrayMessage]);
@@ -69,7 +69,7 @@ Deno.test("Array Schema Validation: 'optional'", () => {
   assertEquals(optional.validate(null).errors, undefined);
 
   assertArrayIncludes(optional.validate("").errors!, [notArrayMessage]);
-  assertArrayIncludes(optional.validate("Cargo").errors!, [notArrayMessage]);
+  assertArrayIncludes(optional.validate("Huuma").errors!, [notArrayMessage]);
 
   assertArrayIncludes(optional.validate(-1).errors!, [notArrayMessage]);
   assertArrayIncludes(optional.validate(0).errors!, [notArrayMessage]);

@@ -1,7 +1,12 @@
 import {
-  type OptionalType,
-  PrimitiveSchema,
+  type BaseProperty,
+  BaseSchema,
+  isDefined,
+  type Property,
+  required,
   type RequiredType,
+  type Validation,
+  type ValidationError,
   type Validator,
 } from "./schema.ts";
 
@@ -12,14 +17,18 @@ export type LiteralJSONSchema<T> = {
 
 export class LiteralSchema<
   T extends string | number | undefined,
-> extends PrimitiveSchema<
-  T extends undefined ? never : T,
-  LiteralSchema<RequiredType<T>>,
-  LiteralSchema<OptionalType<T>>,
+> extends BaseSchema<
+  T,
   LiteralJSONSchema<T>
 > {
-  #jsonSchema?: LiteralJSONSchema<T>;
-  constructor(value: RequiredType<T>) {
+  #type: T;
+  #property: BaseProperty;
+
+  constructor(
+    value: T,
+    { isRequired, validators }: Property = { isRequired: true, validators: [] },
+  ) {
+    const type = `literal:${value}`;
     const typeOfValue = typeof value;
     if (
       typeOfValue !== "string" &&
@@ -34,8 +43,62 @@ export class LiteralSchema<
       type: <any> typeOfValue,
       const: value,
     };
-    super(`literal:${value}`, jsonSchema);
-    this.validator(_isLiteral(value));
+
+    const property: BaseProperty = {
+      isRequired,
+      validators: [...validators],
+      baseValidators: [required(type), _isLiteral(value)],
+    };
+
+    super(type, jsonSchema, property);
+    this.#type = value;
+    this.#property = property;
+  }
+  protected override create(property: Property): this {
+    return new LiteralSchema(this.#type, property) as this;
+  }
+
+  override validate(
+    toValidate: unknown,
+    key?: string,
+  ): Validation<T> {
+    const errors: ValidationError[] = [];
+
+    if (this.#property.isRequired || isDefined(toValidate)) {
+      const validators = [
+        ...this.#property.baseValidators,
+        ...this.#property.validators,
+      ];
+      for (const validator of validators) {
+        const result = validator(toValidate, key);
+        if (result) {
+          errors.push(result);
+        }
+      }
+    }
+
+    if (errors.length) {
+      return { errors, value: undefined };
+    }
+
+    return {
+      value: toValidate as T,
+      errors: undefined,
+    };
+  }
+
+  required(): LiteralSchema<T> {
+    return new LiteralSchema(this.#type, {
+      isRequired: true,
+      validators: [...this.#property.validators],
+    });
+  }
+
+  optional(): LiteralSchema<T | undefined> {
+    return new LiteralSchema(this.#type, {
+      isRequired: false,
+      validators: [...this.#property.validators],
+    });
   }
 }
 

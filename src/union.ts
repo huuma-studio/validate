@@ -1,4 +1,5 @@
 import {
+  type BaseProperty,
   BaseSchema,
   isDefined,
   type Property,
@@ -22,9 +23,12 @@ export class UnionSchema<
   >,
 > extends BaseSchema<SchemaType<T[number]>, UnionJSONSchema<T>> {
   #schemas: T;
-  #property: Property;
+  #property: BaseProperty;
 
-  constructor(schemas: T) {
+  constructor(
+    schemas: T,
+    { isRequired, validators }: Property = { isRequired: true, validators: [] },
+  ) {
     const type = `union:${schemas.map((s) => s?.toString()).join(",")}`;
     const jsonSchema: UnionJSONSchema<T> = {
       oneOf: schemas.map((s) => {
@@ -35,9 +39,10 @@ export class UnionSchema<
         // deno-lint-ignore no-explicit-any
       }) as any,
     };
-    const property: Property = {
-      isRequired: true,
-      validators: [required(type)],
+    const property: BaseProperty = {
+      isRequired,
+      validators: [...validators],
+      baseValidators: [required(type)],
     };
     super(
       type,
@@ -46,6 +51,10 @@ export class UnionSchema<
     );
     this.#schemas = schemas;
     this.#property = property;
+  }
+
+  protected override create(property: Property): this {
+    return new UnionSchema(this.#schemas, property) as this;
   }
 
   validate(value: unknown): Validation<SchemaType<T[number]>> {

@@ -1,6 +1,7 @@
 import {
   type OptionalType,
   PrimitiveSchema,
+  type Property,
   type RequiredType,
   type ValidationError,
   type Validator,
@@ -17,26 +18,30 @@ export class UrlSchema<T = string> extends PrimitiveSchema<
   UrlSchema<OptionalType<T>>,
   UrlJSONSchema
 > {
-  #jsonSchema: UrlJSONSchema;
-
-  constructor() {
+  constructor(
+    { validators, isRequired }: Property = { isRequired: true, validators: [] },
+  ) {
     const jsonSchema: UrlJSONSchema = {
       type: "string",
       format: "uri",
     };
-    super("url", jsonSchema);
-    this.validator(_isUrl);
-    this.#jsonSchema = jsonSchema;
+    super("url", jsonSchema, {
+      baseValidators: [_isUrl],
+      validators: [...validators],
+      isRequired,
+    });
+  }
+
+  protected override create(property: Property): this {
+    return new UrlSchema(property) as this;
   }
 
   http(secure = true): UrlSchema<T> {
-    this.validator(_isHttp(secure));
-    return this;
+    return this.validator(_isHttp(secure));
   }
 
   protocol(protocol: string): UrlSchema<T> {
-    this.validator(_isProtocol(protocol));
-    return this;
+    return this.validator(_isProtocol(protocol));
   }
 }
 

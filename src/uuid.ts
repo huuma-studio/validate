@@ -1,6 +1,7 @@
 import {
   type OptionalType,
   PrimitiveSchema,
+  type Property,
   type RequiredType,
   type ValidationError,
 } from "./schema.ts";
@@ -25,14 +26,24 @@ export class UuidSchema<T = string> extends PrimitiveSchema<
   UuidSchema<OptionalType<T>>,
   UuidJsonSchema
 > {
-  constructor(version?: Version) {
+  constructor(
+    private readonly version?: Version,
+    { validators, isRequired }: Property = { validators: [], isRequired: true },
+  ) {
     const jsonSchema: UuidJsonSchema = {
       type: "string",
       format: "uuid",
       pattern: patterns[version || "all"].source,
     };
-    super("uuid", jsonSchema);
-    this.validator(_isUuid(version));
+    super("uuid", jsonSchema, {
+      baseValidators: [_isUuid(version)],
+      validators: [...validators],
+      isRequired,
+    });
+  }
+
+  create(property: Property): this {
+    return new UuidSchema(this.version, property) as this;
   }
 }
 

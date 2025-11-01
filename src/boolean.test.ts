@@ -28,7 +28,7 @@ Deno.test("Boolean Schema Validation: 'isBoolean'", () => {
   assertArrayIncludes(isBoolean.validate(null).errors!, [requiredMessage]);
 
   assertArrayIncludes(isBoolean.validate("").errors!, [notBooleanMessage]);
-  assertArrayIncludes(isBoolean.validate("Cargo").errors!, [notBooleanMessage]);
+  assertArrayIncludes(isBoolean.validate("Huuma").errors!, [notBooleanMessage]);
 
   assertArrayIncludes(isBoolean.validate(-1).errors!, [notBooleanMessage]);
   assertArrayIncludes(isBoolean.validate(0).errors!, [notBooleanMessage]);
@@ -59,7 +59,7 @@ Deno.test("Boolean Schema Validation: 'required'", () => {
   assertArrayIncludes(bool.validate(null).errors!, [requiredMessage]);
 
   assertArrayIncludes(bool.validate("").errors!, [notBooleanMessage]);
-  assertArrayIncludes(bool.validate("Cargo").errors!, [notBooleanMessage]);
+  assertArrayIncludes(bool.validate("Huuma").errors!, [notBooleanMessage]);
 
   assertArrayIncludes(bool.validate(-1).errors!, [notBooleanMessage]);
   assertArrayIncludes(bool.validate(0).errors!, [notBooleanMessage]);
@@ -84,7 +84,7 @@ Deno.test("Boolean Schema Validation: 'optional'", () => {
   assertEquals(bool.validate(null).errors, undefined);
 
   assertArrayIncludes(bool.validate("").errors!, [notBooleanMessage]);
-  assertArrayIncludes(bool.validate("Cargo").errors!, [notBooleanMessage]);
+  assertArrayIncludes(bool.validate("Huuma").errors!, [notBooleanMessage]);
 
   assertArrayIncludes(bool.validate(-1).errors!, [notBooleanMessage]);
   assertArrayIncludes(bool.validate(0).errors!, [notBooleanMessage]);
@@ -109,7 +109,7 @@ Deno.test("Boolean Schema Validation: 'true'", () => {
   assertArrayIncludes(boolTrue.validate(null).errors!, [notTrueMessage]);
 
   assertArrayIncludes(boolTrue.validate("").errors!, [notTrueMessage]);
-  assertArrayIncludes(boolTrue.validate("Cargo").errors!, [notTrueMessage]);
+  assertArrayIncludes(boolTrue.validate("Huuma").errors!, [notTrueMessage]);
 
   assertArrayIncludes(boolTrue.validate(-1).errors!, [notTrueMessage]);
   assertArrayIncludes(boolTrue.validate(0).errors!, [notTrueMessage]);

@@ -1,4 +1,5 @@
 import {
+  type BaseProperty,
   BaseSchema,
   type JSONSchema,
   jsonSchemaTypes,
@@ -7,16 +8,25 @@ import {
 } from "./schema.ts";
 
 export class UnknownSchema extends BaseSchema<unknown> {
-  readonly #jsonSchema: JSONSchema;
-  readonly #property: Property;
-  constructor() {
+  constructor(
+    { isRequired = false, validators = [] }: Property = {
+      isRequired: false,
+      validators: [],
+    },
+  ) {
     const jsonSchema: JSONSchema = {
       type: [...jsonSchemaTypes],
     };
-    const property: Property = { isRequired: false, validators: [] };
+    const property: BaseProperty = {
+      isRequired,
+      validators: [...validators],
+      baseValidators: [],
+    };
     super("unknown", jsonSchema, property);
-    this.#jsonSchema = jsonSchema;
-    this.#property = property;
+  }
+
+  protected override create(property: Property): this {
+    return new UnknownSchema(property) as this;
   }
 
   validate(value: unknown, _?: string): Validation<unknown> {

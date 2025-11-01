@@ -1,4 +1,5 @@
 import {
+  type BaseProperty,
   BaseSchema,
   isDefined,
   type JSONSchema,
@@ -51,8 +52,7 @@ export class ObjectSchema<
   T extends KeyableSchema<T | undefined>,
 > extends BaseSchema<SchemaType<T>, ObjectJSONSchema<T>> {
   #schema: T extends KeyableSchema<T extends undefined ? never : T> ? T : never;
-  #jsonSchema: JSONSchema;
-  #property: Property;
+  #property: BaseProperty;
 
   get schema(): T extends KeyableSchema<T extends undefined ? never : T> ? T
     : never {
@@ -62,6 +62,7 @@ export class ObjectSchema<
   constructor(
     schema: T extends KeyableSchema<T extends undefined ? never : T> ? T
       : never,
+    { validators, isRequired }: Property = { isRequired: true, validators: [] },
   ) {
     const type = "object";
     const jsonSchema: JSONSchema = {
@@ -80,32 +81,46 @@ export class ObjectSchema<
         return acc;
       }, [] as string[]),
     };
-    const property: Property = {
-      isRequired: true,
-      validators: [required(type), _isObject],
+
+    const property: BaseProperty = {
+      isRequired,
+      validators: [...validators],
+      baseValidators: [required(type), _isObject],
     };
+
     super(type, jsonSchema, property);
     this.#schema = schema;
-    this.#jsonSchema = jsonSchema;
     this.#property = property;
   }
 
+  protected override create(property: Property): this {
+    return new ObjectSchema(this.#schema, property) as this;
+  }
+
   required(): ObjectSchema<T> {
-    this.#property.isRequired = true;
-    return this;
+    return new ObjectSchema(this.#schema, {
+      validators: [...this.#property.validators],
+      isRequired: true,
+    });
   }
 
   optional(): ObjectSchema<T | undefined> {
-    this.#property.isRequired = false;
-    return <ObjectSchema<T | undefined>> this;
+    return new ObjectSchema(this.#schema, {
+      validators: [...this.#property.validators],
+      isRequired: false,
+    }) as ObjectSchema<T | undefined>;
   }
 
   validate(toValidate: unknown, key?: string): Validation<SchemaType<T>> {
     const errors: ValidationError[] = [];
     let schemaType: Record<string, unknown> | undefined = undefined;
     if (this.#property.isRequired || isDefined(toValidate)) {
+      const validators = [
+        ...this.#property.baseValidators,
+        ...this.#property.validators,
+      ];
       schemaType = {};
-      for (const validator of this.#property.validators) {
+      for (const validator of validators) {
         const result = validator(toValidate, key);
         if (result) errors.push(result);
       }

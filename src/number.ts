@@ -1,6 +1,8 @@
 import {
+  type BaseProperty,
   type OptionalType,
   PrimitiveSchema,
+  type Property,
   type RequiredType,
   type ValidationError,
   type Validator,
@@ -16,40 +18,45 @@ export class NumberSchema<T = number> extends PrimitiveSchema<
   NumberSchema<OptionalType<T>>,
   NumberJSONSchema
 > {
-  #jsonSchema: NumberJSONSchema;
-  constructor() {
+  constructor(
+    { isRequired, validators }: Property = { isRequired: true, validators: [] },
+  ) {
     const type = "number";
     const jsonSchema: NumberJSONSchema = {
       type,
     };
-    super(type, jsonSchema);
-    this.validator(_isNumber);
-    this.#jsonSchema = jsonSchema;
+
+    const property: BaseProperty = {
+      isRequired,
+      validators: [...validators],
+      baseValidators: [_isNumber],
+    };
+
+    super(type, jsonSchema, property);
+  }
+
+  protected override create(property: Property): this {
+    return new NumberSchema(property) as this;
   }
 
   positive(): this {
-    this.validator(_isPositive);
-    return this;
+    return this.validator(_isPositive);
   }
 
   negative(): this {
-    this.validator(_isNegative);
-    return this;
+    return this.validator(_isNegative);
   }
 
   equals(to: number): this {
-    this.validator(_isEquals(to));
-    return this;
+    return this.validator(_isEquals(to));
   }
 
   min(like: number): this {
-    this.validator(_isMin(like));
-    return this;
+    return this.validator(_isMin(like));
   }
 
   max(like: number): this {
-    this.validator(_isMax(like));
-    return this;
+    return this.validator(_isMax(like));
   }
 }
 

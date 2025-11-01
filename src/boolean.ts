@@ -1,6 +1,7 @@
 import {
   type OptionalType,
   PrimitiveSchema,
+  type Property,
   type RequiredType,
   type ValidationError,
 } from "./schema.ts";
@@ -15,26 +16,30 @@ export class BooleanSchema<T = boolean> extends PrimitiveSchema<
   BooleanSchema<OptionalType<T>>,
   BooleanJSONSchema
 > {
-  #jsonSchema: BooleanJSONSchema;
-
-  constructor() {
+  constructor(
+    { validators, isRequired }: Property = { validators: [], isRequired: true },
+  ) {
     const type = "boolean";
     const jsonSchema: BooleanJSONSchema = {
       type,
     };
-    super(type, jsonSchema);
-    this.#jsonSchema = jsonSchema;
-    this.validator(_isBoolean);
+    super(type, jsonSchema, {
+      isRequired,
+      validators: [...validators],
+      baseValidators: [_isBoolean],
+    });
+  }
+
+  protected override create(property: Property): this {
+    return new BooleanSchema(property) as this;
   }
 
   true(): BooleanSchema<true> {
-    this.validator(_isTrue);
-    return <BooleanSchema<true>> this;
+    return <BooleanSchema<true>> this.validator(_isTrue);
   }
 
   false(): BooleanSchema<false> {
-    this.validator(_isFalse);
-    return <BooleanSchema<false>> this;
+    return <BooleanSchema<false>> this.validator(_isFalse);
   }
 }
 

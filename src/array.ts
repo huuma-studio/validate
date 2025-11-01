@@ -1,4 +1,5 @@
 import {
+  type BaseProperty,
   BaseSchema,
   isDefined,
   type Property,
@@ -10,8 +11,7 @@ import {
 
 export type ArrayJSONSchema<T extends Schema<unknown> | undefined> = {
   type: "array";
-  items: T extends BaseSchema<infer U> ? ReturnType<T["jsonSchema"]>
-    : never;
+  items: T extends BaseSchema<infer U> ? ReturnType<T["jsonSchema"]> : never;
 };
 
 export class ArraySchema<
@@ -20,33 +20,47 @@ export class ArraySchema<
   T extends Schema<unknown> ? T["infer"][] : undefined,
   ArrayJSONSchema<T>
 > {
-  #jsonSchema: ArrayJSONSchema<T>;
-  #property: Property;
-  constructor(private schema: T extends undefined ? never : T) {
+  readonly #property: BaseProperty;
+
+  constructor(
+    private schema: T extends undefined ? never : T,
+    { validators, isRequired }: Property = {
+      validators: [],
+      isRequired: true,
+    },
+  ) {
     const type = "array";
     const jsonSchema: ArrayJSONSchema<T> = {
       type,
       // deno-lint-ignore no-explicit-any
       items: <any> schema.jsonSchema(),
     };
-    const property: Property = {
-      isRequired: true,
-      validators: [required(type), _isArray],
-    };
 
+    const property: BaseProperty = {
+      isRequired,
+      validators: [...validators],
+      baseValidators: [required(type), _isArray],
+    };
     super(type, jsonSchema, property);
-    this.#jsonSchema = jsonSchema;
     this.#property = property;
   }
 
+  protected override create(property: Property): this {
+    return new ArraySchema(this.schema, property) as this;
+  }
+
   required(): ArraySchema<T> {
-    this.#property.isRequired = true;
-    return this;
+    return this.create({
+      validators: [...this.#property.validators],
+      isRequired: true,
+    });
   }
 
   optional(): ArraySchema<T | undefined> {
-    this.#property.isRequired = false;
-    return this;
+    return this.create({
+      validators: [...this.#property.validators],
+      isRequired: false,
+    });
   }
 
   validate(
@@ -56,7 +70,11 @@ export class ArraySchema<
     const errors: ValidationError[] = [];
 
     if (this.#property.isRequired || isDefined(toValidate)) {
-      for (const validator of this.#property.validators) {
+      const validators = [
+        ...this.#property.baseValidators,
+        ...this.#property.validators,
+      ];
+      for (const validator of validators) {
         const result = validator(toValidate, key);
         if (result) {
           errors.push(result);
@@ -93,9 +111,7 @@ export class ArraySchema<
   }
 }
 
-export function array<
-  T extends Schema<unknown> | undefined,
->(
+export function array<T extends Schema<unknown> | undefined>(
   schema: T extends undefined ? never : T,
 ): ArraySchema<T> {
   return new ArraySchema(schema);

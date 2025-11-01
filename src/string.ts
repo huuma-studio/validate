@@ -1,5 +1,6 @@
 import {
   PrimitiveSchema,
+  type Property,
   type ValidationError,
   type Validator,
 } from "./schema.ts";
@@ -14,49 +15,53 @@ export class StringSchema<T = string> extends PrimitiveSchema<
   StringSchema<string | undefined>,
   StringJSONSchema
 > {
-  readonly #jsonSchema: StringJSONSchema;
-  constructor() {
+  constructor(
+    { validators, isRequired }: Property = {
+      isRequired: true,
+      validators: [],
+    },
+  ) {
     const jsonSchema: StringJSONSchema = {
       type: "string",
     };
-    super("string", jsonSchema);
-    this.#jsonSchema = jsonSchema;
-    this.validator(_isString);
+
+    super("string", jsonSchema, {
+      isRequired,
+      validators: [...validators],
+      baseValidators: [_isString],
+    });
+  }
+
+  create(property: Property): this {
+    return new StringSchema(property) as this;
   }
 
   empty(): this {
-    this.validator(_isEmpty);
-    return this;
+    return this.validator(_isEmpty);
   }
 
   notEmpty(): this {
-    this.validator(_isNotEmpty);
-    return this;
+    return this.validator(_isNotEmpty);
   }
 
   equals(to: string): this {
-    this.validator(_isEquals(to));
-    return this;
+    return this.validator(_isEquals(to));
   }
 
   notEquals(to: string): this {
-    this.validator(_isNotEquals(to));
-    return this;
+    return this.validator(_isNotEquals(to));
   }
 
   startsWith(needle: string): this {
-    this.validator(_startsWith(needle));
-    return this;
+    return this.validator(_startsWith(needle));
   }
 
   endsWith(needle: string): this {
-    this.validator(_endsWith(needle));
-    return this;
+    return this.validator(_endsWith(needle));
   }
 
   regex(regex: RegExp): this {
-    this.validator(_isRegex(regex));
-    return this;
+    return this.validator(_isRegex(regex));
   }
 }
 
