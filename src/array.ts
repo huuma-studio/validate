@@ -68,12 +68,13 @@ export class ArraySchema<
     key?: string,
   ): Validation<T extends Schema<unknown> ? T["infer"][] : undefined> {
     const errors: ValidationError[] = [];
-
+    const validatedItems = [];
     if (this.#property.isRequired || isDefined(toValidate)) {
       const validators = [
         ...this.#property.baseValidators,
         ...this.#property.validators,
       ];
+
       for (const validator of validators) {
         const result = validator(toValidate, key);
         if (result) {
@@ -86,12 +87,15 @@ export class ArraySchema<
             toValidate.entries()
           )
         ) {
-          const validationErrors = this.schema.validate(
-            entry,
-            `array index ${index.toString()}`,
-          ).errors;
+          const { value: validatedEntry, errors: validationErrors } = this
+            .schema.validate(
+              entry,
+              `array index ${index.toString()}`,
+            );
           if (validationErrors?.length) {
             errors.push(...validationErrors);
+          } else {
+            validatedItems.push(validatedEntry);
           }
         }
       }
@@ -105,7 +109,8 @@ export class ArraySchema<
     }
 
     return {
-      value: <T extends Schema<unknown> ? T["infer"][] : undefined> toValidate,
+      value: <T extends Schema<unknown> ? T["infer"][]
+        : undefined> validatedItems,
       errors: undefined,
     };
   }
