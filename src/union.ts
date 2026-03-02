@@ -68,13 +68,19 @@ export class UnionSchema<
       }
     }
 
+    const passedValidations = validations.filter((v) => !v.errors?.length);
+    const failedValidations = validations.filter((v) => v.errors?.length);
+
     if (
       // At least 1 validation passes
-      validations.filter((v) => !v.errors?.length).length ||
-      // or no validation fails (in case its not required)
-      validations.filter((v) => v.errors?.length).length === 0
+      passedValidations.length ||
+      // If optional no failed validations is valid
+      (!this.#property.isRequired && failedValidations.length === 0)
     ) {
-      return { value: <SchemaType<T[number]>> value, errors: undefined };
+      return {
+        value: <SchemaType<T[number]>> passedValidations.shift()?.value,
+        errors: undefined,
+      };
     }
 
     return {
