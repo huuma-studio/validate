@@ -11,3 +11,4 @@ export { union, UnionSchema } from "./union.ts";
 export { unknown, UnknownSchema } from "./unknown.ts";
 export { url, UrlSchema } from "./url.ts";
 export { uuid, UuidSchema } from "./uuid.ts";
+export { nil, NullSchema } from "./null.ts";
