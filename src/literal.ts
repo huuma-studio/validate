@@ -87,15 +87,15 @@ export class LiteralSchema<
     };
   }
 
-  required(): LiteralSchema<T> {
-    return new LiteralSchema(this.#type, {
+  required(): LiteralSchema<Exclude<T, undefined>> {
+    return this.create({
       isRequired: true,
       validators: [...this.#property.validators],
-    });
+    }) as unknown as LiteralSchema<Exclude<T, undefined>>;
   }
 
   optional(): LiteralSchema<T | undefined> {
-    return new LiteralSchema(this.#type, {
+    return this.create({
       isRequired: false,
       validators: [...this.#property.validators],
     });

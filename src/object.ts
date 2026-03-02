@@ -5,6 +5,7 @@ import {
   type JSONSchema,
   type Property,
   required,
+  type RequiredType,
   type Schema,
   type Validation,
   type ValidationError,
@@ -49,7 +50,7 @@ export interface ObjectJSONSchema<T> {
 }
 
 export class ObjectSchema<
-  T extends KeyableSchema<T | undefined>,
+  T,
 > extends BaseSchema<SchemaType<T>, ObjectJSONSchema<T>> {
   #schema: T extends KeyableSchema<T extends undefined ? never : T> ? T : never;
   #property: BaseProperty;
@@ -97,11 +98,11 @@ export class ObjectSchema<
     return new ObjectSchema(this.#schema, property) as this;
   }
 
-  required(): ObjectSchema<T> {
-    return new ObjectSchema(this.#schema, {
+  required(): ObjectSchema<RequiredType<T>> {
+    return this.create({
       validators: [...this.#property.validators],
       isRequired: true,
-    });
+    }) as ObjectSchema<RequiredType<T>>;
   }
 
   optional(): ObjectSchema<T | undefined> {
@@ -129,10 +130,11 @@ export class ObjectSchema<
           ? (<Keyable> toValidate)[key]
           : undefined;
 
-        const { value, errors: validationErrors } = this.#schema[key].validate(
-          toPush,
-          key,
-        );
+        const { value, errors: validationErrors } =
+          (<Schema<unknown>> this.#schema[key]).validate(
+            toPush,
+            key,
+          );
 
         if (validationErrors?.length) {
           errors.push(...validationErrors);

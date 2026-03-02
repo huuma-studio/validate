@@ -49,11 +49,11 @@ export class ArraySchema<
     return new ArraySchema(this.schema, property) as this;
   }
 
-  required(): ArraySchema<T> {
+  required(): ArraySchema<Exclude<T, undefined>> {
     return this.create({
       validators: [...this.#property.validators],
       isRequired: true,
-    });
+    }) as unknown as ArraySchema<Exclude<T, undefined>>;
   }
 
   optional(): ArraySchema<T | undefined> {

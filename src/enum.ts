@@ -49,15 +49,15 @@ export class EnumSchema<
     return new EnumSchema(this.#enums, property) as this;
   }
 
-  required(): EnumSchema<T> {
-    return new EnumSchema(this.#enums, {
+  required(): EnumSchema<Exclude<T, undefined>> {
+    return this.create({
       isRequired: true,
       validators: [...this.#property.validators],
-    });
+    }) as unknown as EnumSchema<Exclude<T, undefined>>;
   }
 
   optional(): EnumSchema<T | undefined> {
-    return new EnumSchema(this.#enums, {
+    return this.create({
       isRequired: false,
       validators: [...this.#property.validators],
     });
