@@ -43,8 +43,8 @@ import { url } from "jsr:@huuma/validate";
 
 const site = url().http(); // https only (default)
 site.validate("https://example.com"); // { value: "https://example.com", errors: undefined }
-site.validate("http://example.com");  // errors: not of protocol type "https:"
-site.validate("not a url");            // errors: not a valid "URL"
+site.validate("http://example.com");  // errors: [{ message: '"url" is not of protocol type "https:"' }]
+site.validate("not a url");            // errors: 2 entries — "is not a valid \"URL\"" and "is not of protocol type \"https:\"" (both _isUrl and _isHttp run, no short-circuit)
 
 const anyHttp = url().http(false); // http or https
 anyHttp.validate("http://example.com");     // passes

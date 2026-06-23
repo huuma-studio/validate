@@ -65,6 +65,15 @@ Thrown by `parse()`. Inspect `e.errors` for the structured `ValidationError[]`.
 
 > `isDefined` treats **both** `null` and `undefined` as absent. This is why optional schemas skip validation for `null` too.
 
+## The `key` parameter
+
+`validate(value, key?)` and `parse(value)` accept an optional `key` that labels the value in error messages. Every validator receives it and interpolates it as `"${key || <fallback>}"`.
+
+- **With a `key`**: messages use it, e.g. `schema.validate(0, "age")` → `"age" is not positive`.
+- **Without a `key`**: messages fall back to a per-schema default — usually the schema's **type name** (`"string"`, `"number"`, `"boolean"`, `"object"`, `"array"`, `"url"`), but a few use a hardcoded fallback (`UuidSchema` → `"string"`, `EnumSchema` → `"enum"`, `LiteralSchema` → `"literal"`, `NullSchema`/`UndefinedSchema` → `"value"`).
+- **Nested validation** (`ObjectSchema`, `ArraySchema`) passes the property name / `"array index <i>"` automatically, so you don't need to pass a `key` for fields inside an object.
+- For top-level / standalone calls where you want readable messages, pass the field name explicitly: `schema.validate(input, "email")`.
+
 ## JSON Schema types
 
 `JSONSchemaTypes = "string" | "number" | "object" | "array" | "boolean" | "null"`. The `JSONSchema` shape supports: `type`, `properties`, `required`, `items`, `enum`, `oneOf`, `const`, `format`, `pattern`.
@@ -76,3 +85,17 @@ Thrown by `parse()`. Inspect `e.errors` for the structured `ValidationError[]`.
 | required    | yes                              | `"... is required"` error |
 | optional    | yes                              | skipped → `{ value: <absent>, errors: undefined }` |
 | either      | no                               | validators run normally |
+
+## Error accumulation (no short-circuit)
+
+Validators do **not** short-circuit. On a failed validation, **every** base validator **and** every chained constraint runs in sequence, and **all** produced errors are collected into the `errors` array. A single invalid value can therefore yield multiple errors.
+
+This is most visible with required fields: when a required `string().notEmpty().minLength(3)` field is **absent**, you typically get three errors — `is required` (from the required base validator), `is not type "string"` (from the type base validator), and `is empty` / `length is less than 3` (from the chained constraints, which also run on the absent value). Similarly `number().min(13).max(130).validate("25")` returns three errors: `is not type "number"`, `is smaller than 13`, and `is bigger than 130`.
+
+Practical implications:
+
+- Don't assume `errors` has exactly one entry per invalid field — iterate the whole array.
+- To surface a single user-facing message, deduplicate or pick the first error per field/path in your presentation layer.
+- The `value` is `undefined` whenever `errors` is non-empty; you never get a partial value.
+
+This behavior is uniform across all schemas (`PrimitiveSchema.validate`, `ObjectSchema.validate`, `ArraySchema.validate`, etc. all collect every error from every validator they run).

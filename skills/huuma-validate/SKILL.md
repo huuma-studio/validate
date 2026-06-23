@@ -77,7 +77,7 @@ When in doubt, default to the factory. `uuid()` accepts an optional version (`"1
 3. **Two validation entry points:**
    - `schema.validate(input)` → `{ value, errors }`, never throws. Check `errors` for an array.
    - `schema.parse(input)` → returns `value`, throws `ValidationException` (with `.errors`) on failure.
-4. **Errors are `{ message: string }[]`.** Field names are embedded via the `key` arg; object/array validation passes property/index names automatically.
+4. **Errors are `{ message: string }[]` and accumulate (no short-circuit).** Every base validator and every chained constraint runs and **all** errors are collected — a single invalid value can yield multiple errors (e.g. an absent required `string().notEmpty().minLength(3)` field produces `is required`, `is not type "string"`, and `is empty`/`length is less than 3`). Iterate the whole array; don't assume one error per field. See `references/schema.md`.
 5. **`.custom()` exists only on `PrimitiveSchema` subclasses** (`StringSchema`, `NumberSchema`, `BooleanSchema`, `UrlSchema`, `UuidSchema`) — not on `ObjectSchema`, `ArraySchema`, `UnionSchema`, `EnumSchema`, `LiteralSchema`. See `references/schema.md`.
 
 ## Quick reference: what each schema does

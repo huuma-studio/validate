@@ -66,9 +66,20 @@ user.validate({ username: "john", age: 25 });
 user.validate({ username: "", age: 25 });
 // errors: [{ message: '"username" is empty' }]
 
-user.validate({ age: 25 });           // errors: [{ message: '"username" is required' }]
+user.validate({ age: 25 });           // absent required field — multiple errors (no short-circuit):
+// errors: [
+//   { message: '"username" is required' },
+//   { message: '"username" is not type "string"' },
+//   { message: '"username" is empty' }
+// ]
 user.validate({ username: "j", age: 15 }); // errors: [{ message: '"age" is smaller than 18' }]
-user.validate(null);                   // errors: [{ message: '"<root>" is required' }] (required by default)
+user.validate(null);                   // cascades: object-level + every required field fails:
+// errors: [
+//   { message: '"object" is required' },
+//   { message: '"object" not type "object"' },
+//   { message: '"username" is required' }, { message: '"username" is not type "string"' }, { message: '"username" is empty' },
+//   { message: '"age" is required' }, { message: '"age" is not type "number"' }, { message: '"age" is smaller than 18' }
+// ]  (root key falls back to the type name "object", not a path)
 
 // Unknown keys are ignored
 user.validate({ username: "j", age: 20, extra: "ignored" });

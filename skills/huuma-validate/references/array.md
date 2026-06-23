@@ -50,8 +50,8 @@ import { array, string, number, object } from "jsr:@huuma/validate";
 
 const tags = array(string().notEmpty());
 tags.validate(["a", "b"]);          // { value: ["a","b"], errors: undefined }
-tags.validate(["a", "", "c"]);       // errors include { message: '"array index 1" is empty' }
-tags.validate("not-an-array");       // errors: [{ message: '"tags" not type "array"' }]
+tags.validate(["a", "", "c"], "tags"); // errors include { message: '"array index 1" is empty' } (element key is the index)
+tags.validate("not-an-array", "tags"); // errors: [{ message: '"tags" not type "array"' }]
 
 const nums = array(number().min(0)).optional();
 nums.validate(undefined);          // { value: undefined, errors: undefined }

@@ -42,9 +42,9 @@ class BooleanSchema<T = boolean> extends PrimitiveSchema<T, BooleanSchema<Requir
 import { boolean } from "jsr:@huuma/validate";
 
 const enabled = boolean().true();
-enabled.validate(true);   // { value: true, errors: undefined }
-enabled.validate(false);  // errors: [{ message: '"enabled" is not "true"' }]
-enabled.validate("true"); // errors: [{ message: '"enabled" is not type "boolean"' }]
+enabled.validate(true);             // { value: true, errors: undefined }
+enabled.validate(false, "enabled"); // errors: [{ message: '"enabled" is not "true"' }]
+enabled.validate("true", "enabled");// errors: 2 entries — '"enabled" is not type "boolean"' and '"enabled" is not "true"' (no short-circuit)
 
 const disabled = boolean().false();
 disabled.validate(false); // { value: false, errors: undefined }
@@ -52,6 +52,8 @@ disabled.validate(false); // { value: false, errors: undefined }
 const flag = boolean().optional();
 flag.validate(undefined); // { value: undefined, errors: undefined }
 ```
+
+> The second argument to `validate(value, key?)` labels the field in error messages. **Without a `key`, the message falls back to the schema's type name** (e.g. `"boolean"`, `"string"`, `"number"`) — so `enabled.validate(false)` (no key) reports `"boolean" is not "true"`, not `"enabled"`. Object/array validation passes property/index names as the key automatically.
 
 ## JSON Schema
 

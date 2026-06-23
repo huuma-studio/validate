@@ -47,9 +47,9 @@ Membership uses `Array.prototype.includes` strict equality — no coercion. `enu
 import { enums } from "jsr:@huuma/validate";
 
 const role = enums(["admin", "user", "guest"]);
-role.validate("admin"); // { value: "admin", errors: undefined }
-role.validate("owner");  // errors: [{ message: '"role": ("owner") is not one of "admin", "user", "guest"' }]
-role.validate(0);         // errors: membership fails
+role.validate("admin", "role"); // { value: "admin", errors: undefined }
+role.validate("owner", "role");  // errors: [{ message: '"role": ("owner") is not one of "admin", "user", "guest"' }]
+role.validate(0, "role");         // errors: membership fails ("role": ("0") is not one of …)
 
 const status = enums([200, 400, 500]).optional();
 status.validate(200);      // { value: 200, errors: undefined }

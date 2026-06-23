@@ -43,19 +43,21 @@ class NumberSchema<T = number> extends PrimitiveSchema<T, NumberSchema<RequiredT
 
 If you need to allow infinities, write a `.custom()` validator instead of relying on the base check.
 
+**No short-circuit:** the base validators and every chained constraint (`.min`/`.max`/`.positive`/…) all run and collect errors. A non-number passed to `number().min(13).max(130)` therefore yields three errors (`is not type "number"`, `is smaller than 13`, `is bigger than 130`) — see `references/schema.md`.
+
 ## Examples
 
 ```typescript
 import { number } from "jsr:@huuma/validate";
 
 const age = number().min(13).max(130);
-age.validate(25);    // { value: 25, errors: undefined }
-age.validate(12);    // errors: [{ message: '"age" is smaller than 13' }]
-age.validate("25");  // errors: [{ message: '"age" is not type "number"' }]
-age.validate(NaN);   // errors: [{ message: '"age" is not a finite number' }]
-age.validate(Infinity); // errors: [{ message: '"age" is not a finite number' }]
+age.validate(25, "age");    // { value: 25, errors: undefined }
+age.validate(12, "age");    // errors: [{ message: '"age" is smaller than 13' }]
+age.validate("25", "age");  // errors: 3 entries — '"age" is not type "number"', '"age" is smaller than 13', '"age" is bigger than 130' (no short-circuit)
+age.validate(NaN, "age");   // errors: 3 entries — '"age" is not a finite number', '"age" is smaller than 13', '"age" is bigger than 130'
+age.validate(Infinity, "age"); // errors: 3 entries — same as NaN (non-finite + both range checks fail)
 
-number().positive().validate(0);   // fails — positive means > 0
+number().positive().validate(0);   // fails — positive means > 0 (no key → message uses type "number")
 number().positive().validate(0.5);// passes — 0.5 > 0
 number().positive().validate(-1);// fails
 number().negative().validate(-0); // fails — -0 === 0, not < 0

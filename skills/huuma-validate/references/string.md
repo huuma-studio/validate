@@ -27,7 +27,7 @@ class StringSchema<T = string> extends PrimitiveSchema<T, StringSchema<string>, 
 | `notEmpty()` | `(): this` | `"${key\|"string"}" is empty` (when `""`, `null`, or `undefined`) |
 | `empty()` | `(): this` | `"${key\|"string"}" is not empty` |
 | `equals(to)` | `(to: string): this` | `"${key\|"string"}" is not equals "${to}"` |
-| `notEquals(to)` | `(to: string): this` | `"${key\|"string"}" is is equals "${to}"` |
+| `notEquals(to)` | `(to: string): this` | `"${key\|"string"}" is equals "${to}"` |
 | `startsWith(needle)` | `(needle: string): this` | `"${key\|"string"}" does not start with "${needle}"` |
 | `endsWith(needle)` | `(needle: string): this` | `"${key\|"string"}" does not end with "${needle}"` |
 | `regex(re)` | `(regex: RegExp): this` | `"${key\|"string"}" does not match regex "${regex}"` |
@@ -42,7 +42,7 @@ Inherited from `BaseSchema`: `validate`, `parse`, `jsonSchema`, `isRequired`.
 
 ## Base validation
 
-The type check `_isString` runs first: if `typeof value !== "string"` → `"${key|"string"}" is not type "string"`. Subsequent constraint validators then run in chain order. A non-string value short-circuits the type check but the chained validators may still be invoked depending on value; in practice, gate with the type check result.
+The type check `_isString` runs first: if `typeof value !== "string"` → `"${key|"string"}" is not type "string"`. Then each chained constraint runs **in sequence, with no short-circuit** — every validator runs and every error is collected. A non-string value still gets passed to the chained validators (length/prefix/regex checks), which may add further errors, so a single invalid value commonly produces several errors. See `references/schema.md` for the error-accumulation rules.
 
 ## Length semantics
 
@@ -58,8 +58,8 @@ const username = string().notEmpty().minLength(3).maxLength(32);
 const { value, errors } = username.validate("john");
 // value: "john", errors: undefined
 
-username.validate("");        // errors: [{ message: '"username" is empty' }]
-username.validate("ab");      // errors: [{ message: '"username" length is less than 3' }]
+username.validate("", "username");   // errors: [{ message: '"username" is empty' }, { message: '"username" length is less than 3' }] (no short-circuit — both notEmpty and minLength fail)
+username.validate("ab", "username");   // errors: [{ message: '"username" length is less than 3' }]
 
 // Regex
 const email = string().regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/);

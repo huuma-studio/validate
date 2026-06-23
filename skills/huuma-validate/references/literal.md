@@ -44,8 +44,8 @@ Equality is strict: `literal(42).validate("42")` fails (no coercion).
 import { literal } from "jsr:@huuma/validate";
 
 const status = literal("active");
-status.validate("active"); // { value: "active", errors: undefined }
-status.validate("invited"); // errors: [{ message: '"status" is not equal to "active"' }]
+status.validate("active", "status"); // { value: "active", errors: undefined }
+status.validate("invited", "status"); // errors: [{ message: '"status" is not equal to "active"' }]
 
 const code = literal(42).optional();
 code.validate(42);          // { value: 42, errors: undefined }
