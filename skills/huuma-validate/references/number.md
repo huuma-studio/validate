@@ -24,7 +24,7 @@ class NumberSchema<T = number> extends PrimitiveSchema<T, NumberSchema<RequiredT
 
 | Method | Signature | Behavior | Error message |
 |--------|-----------|----------|---------------|
-| `positive()` | `(): this` | value `>= 1` | `"${key\|"number"}" is not positive` |
+| `positive()` | `(): this` | value `> 0` | `"${key\|"number"}" is not positive` |
 | `negative()` | `(): this` | value `< 0` | `"${key\|"number"}" is not negative` |
 | `min(n)` | `(like: number): this` | value `>= n` | `"${key\|"number"}" is smaller than ${n}` |
 | `max(n)` | `(like: number): this` | value `<= n` | `"${key\|"number"}" is bigger than ${n}` |
@@ -35,11 +35,13 @@ class NumberSchema<T = number> extends PrimitiveSchema<T, NumberSchema<RequiredT
 
 ## Base validation
 
-`_isNumber` uses `Number.isFinite(value)` after a `typeof value !== "number"` guard. Therefore:
+`_isNumber` runs two checks in sequence — first a `typeof value !== "number"` guard, then a `Number.isFinite(value)` check. This produces **two distinct error messages**:
 
-- `NaN` → fails (`"${key|"number"}" is not type "number"`).
-- `Infinity` / `-Infinity` → **also fail** (not finite). If you need to allow infinities, write a `.custom()` validator instead of relying on the base check.
+- Non-numbers (strings, booleans, objects, `null`, …) → `"${key|"number"}" is not type "number"`.
+- `NaN` / `Infinity` / `-Infinity` → `"${key|"number"}" is not a finite number` (they pass the `typeof` guard but fail the finiteness check).
 - Strings like `"42"` are rejected — there is no coercion.
+
+If you need to allow infinities, write a `.custom()` validator instead of relying on the base check.
 
 ## Examples
 
@@ -50,11 +52,14 @@ const age = number().min(13).max(130);
 age.validate(25);    // { value: 25, errors: undefined }
 age.validate(12);    // errors: [{ message: '"age" is smaller than 13' }]
 age.validate("25");  // errors: [{ message: '"age" is not type "number"' }]
-age.validate(NaN);   // errors: [{ message: '"age" is not type "number"' }]
+age.validate(NaN);   // errors: [{ message: '"age" is not a finite number' }]
+age.validate(Infinity); // errors: [{ message: '"age" is not a finite number' }]
 
-number().positive().validate(0);   // fails — positive means >= 1
+number().positive().validate(0);   // fails — positive means > 0
+number().positive().validate(0.5);// passes — 0.5 > 0
+number().positive().validate(-1);// fails
 number().negative().validate(-0); // fails — -0 === 0, not < 0
-number().positive().validate(0.5);// fails — 0.5 < 1
+number().negative().validate(-0.5); // passes
 
 // Port range
 const port = number().min(0).max(65535);
