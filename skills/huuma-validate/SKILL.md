@@ -28,6 +28,7 @@ The instructions below are the orientation. **For exact signatures, edge cases, 
 | Huuma/Route middleware (`validateBody`, `validateSearch`) | `references/middleware.md` |
 | `.jsonSchema()` output & keyword coverage | `references/json-schema.md` |
 | Composition recipes, optional/nullable/strict patterns, boundary helpers | `references/usage-patterns.md` |
+| Deriving TypeScript types from a schema (`typeof schema.infer`) | `references/type-inference.md` |
 
 When unsure of a method's behavior, the corresponding `references/*.md` and the source `src/<type>.ts` are the sources of truth — the project README lags behind the source.
 
@@ -103,6 +104,21 @@ Factory-first. Use the factory, not `new` (see the "⚠️ Always prefer the fac
 
 Every schema has `.jsonSchema()` returning a cached JSON Schema object. Keyword coverage is partial (e.g. `min`/`max`/`regex` are runtime-only and do not populate `minimum`/`pattern`). See `references/json-schema.md` for the full keyword table and caveats.
 
+## Type inference
+
+Each schema carries a phantom `infer: T` member, so one schema is both the runtime validator and the source of a static type. The canonical idiom:
+
+```typescript
+const userSchema = object({ username: string().notEmpty(), age: number().min(18) });
+type User = typeof userSchema.infer; // { username: string; age: number }
+
+// validate/parse already return the inferred type — no named type needed:
+const { value } = userSchema.validate(input); // value: User
+const user = userSchema.parse(input);          // user: User (throws on invalid)
+```
+
+Key points: `.optional()` widens to `T | undefined`; `.true()`/`.false()`/`literal()`/`enums()` narrow to literals/unions; `infer` is a phantom *type* only (don't read it as a value). Full detail, alternative extraction forms, and gotchas in `references/type-inference.md`.
+
 ## Common mistakes to avoid
 
 - **Using `new *Schema(...)` constructors.** Use the factory functions (`string()`, `number()`, `object()`, ...) instead — they are the idiomatic API. The factories accept the same options as the constructors (e.g. `uuid("4")` for a versioned UUID). There is no reason to reach for `new` in application code. See the "⚠ Always prefer the factory functions" section above.
@@ -112,6 +128,7 @@ Every schema has `.jsonSchema()` returning a cached JSON Schema object. Keyword 
 - **Treating `null` and `undefined` differently for optionality** — both are "absent"; optional schemas skip both.
 - **Expecting `ObjectSchema` to reject unknown keys** — it ignores/drops them. For strictness, validate the keyset separately (see `references/usage-patterns.md`).
 - **Using `parse()` without try/catch** — it throws `ValidationException` on any failure.
+- **Reading `schema.infer` as a value.** `infer` is a phantom type member; `schema.infer` is `undefined` at runtime. Extract the type with `typeof schema.infer`, never the value. See `references/type-inference.md`.
 - **Importing the whole library when bundle size matters** — use deep imports (`@huuma/validate/string`, etc.).
 
 ## Worked example
@@ -130,6 +147,8 @@ const userSchema = object({
   website: url().http().optional(),
   status: union([literal("active"), literal("invited")]),
 });
+
+type User = typeof userSchema.infer; // the validated value's static type
 
 const { value, errors } = userSchema.validate(input);
 if (errors) console.error(errors.map((e) => e.message));

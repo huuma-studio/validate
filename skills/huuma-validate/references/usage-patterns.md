@@ -88,6 +88,8 @@ function assertValid<T>(schema: Schema<T>, input: unknown): T {
 
 ## Reuse a schema across body + type
 
+See `references/type-inference.md` for the full guide on deriving types from schemas. The short version: `type CreateUser = typeof createUserSchema.infer`.
+
 ```typescript
 const createUserSchema = object({
   username: string().notEmpty(),
