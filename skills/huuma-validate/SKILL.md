@@ -135,7 +135,7 @@ Key points: `.optional()` widens to `T | undefined`; `.true()`/`.false()`/`liter
 
 ```typescript
 import {
-  object, string, number, array, enums, url, union, literal, UuidSchema,
+  object, string, number, array, enums, url, union, literal, uuid,
 } from "jsr:@huuma/validate";
 
 const userSchema = object({
