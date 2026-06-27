@@ -131,6 +131,7 @@ Deno.test("Number Schema Validation: 'positive'", () => {
 
   assertArrayIncludes(positive.validate(-1).errors!, [isNotPositiveMessage]);
   assertArrayIncludes(positive.validate(0).errors!, [isNotPositiveMessage]);
+  assertEquals(positive.validate(0.5).errors, undefined); // > 0, not >= 1 — fractions pass
   assertEquals(positive.validate(1).errors, undefined);
 
   assertArrayIncludes(positive.validate(NaN).errors!, [isNotPositiveMessage]);
