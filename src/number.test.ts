@@ -8,6 +8,9 @@ const requiredMessage = {
 const notNumberMessage = {
   message: '"number" is not type "number"',
 };
+const notFiniteNumberMessage = {
+  message: '"number" is not a finite number',
+};
 const isNotPositiveMessage = {
   message: '"number" is not positive',
 };
@@ -39,9 +42,13 @@ Deno.test("Number Schema Validation: 'isNumber'", () => {
   assertEquals(isNumber.validate(0).errors, undefined);
   assertEquals(isNumber.validate(1).errors, undefined);
 
-  assertArrayIncludes(isNumber.validate(NaN).errors!, [notNumberMessage]);
-  assertArrayIncludes(isNumber.validate(Infinity).errors!, [notNumberMessage]);
-  assertArrayIncludes(isNumber.validate(-Infinity).errors!, [notNumberMessage]);
+  assertArrayIncludes(isNumber.validate(NaN).errors!, [notFiniteNumberMessage]);
+  assertArrayIncludes(isNumber.validate(Infinity).errors!, [
+    notFiniteNumberMessage,
+  ]);
+  assertArrayIncludes(isNumber.validate(-Infinity).errors!, [
+    notFiniteNumberMessage,
+  ]);
 
   assertArrayIncludes(isNumber.validate(true).errors!, [notNumberMessage]);
   assertArrayIncludes(isNumber.validate(false).errors!, [notNumberMessage]);
@@ -64,9 +71,13 @@ Deno.test("Number Schema Validation: 'required'", () => {
   assertEquals(required.validate(0).errors, undefined);
   assertEquals(required.validate(1).errors, undefined);
 
-  assertArrayIncludes(required.validate(NaN).errors!, [notNumberMessage]);
-  assertArrayIncludes(required.validate(Infinity).errors!, [notNumberMessage]);
-  assertArrayIncludes(required.validate(-Infinity).errors!, [notNumberMessage]);
+  assertArrayIncludes(required.validate(NaN).errors!, [notFiniteNumberMessage]);
+  assertArrayIncludes(required.validate(Infinity).errors!, [
+    notFiniteNumberMessage,
+  ]);
+  assertArrayIncludes(required.validate(-Infinity).errors!, [
+    notFiniteNumberMessage,
+  ]);
 
   assertArrayIncludes(required.validate(true).errors!, [notNumberMessage]);
   assertArrayIncludes(required.validate(false).errors!, [notNumberMessage]);
@@ -89,9 +100,13 @@ Deno.test("Number Schema Validation: 'optional'", () => {
   assertEquals(optional.validate(0).errors, undefined);
   assertEquals(optional.validate(1).errors, undefined);
 
-  assertArrayIncludes(optional.validate(NaN).errors!, [notNumberMessage]);
-  assertArrayIncludes(optional.validate(Infinity).errors!, [notNumberMessage]);
-  assertArrayIncludes(optional.validate(-Infinity).errors!, [notNumberMessage]);
+  assertArrayIncludes(optional.validate(NaN).errors!, [notFiniteNumberMessage]);
+  assertArrayIncludes(optional.validate(Infinity).errors!, [
+    notFiniteNumberMessage,
+  ]);
+  assertArrayIncludes(optional.validate(-Infinity).errors!, [
+    notFiniteNumberMessage,
+  ]);
 
   assertArrayIncludes(optional.validate(true).errors!, [notNumberMessage]);
   assertArrayIncludes(optional.validate(false).errors!, [notNumberMessage]);
@@ -116,6 +131,7 @@ Deno.test("Number Schema Validation: 'positive'", () => {
 
   assertArrayIncludes(positive.validate(-1).errors!, [isNotPositiveMessage]);
   assertArrayIncludes(positive.validate(0).errors!, [isNotPositiveMessage]);
+  assertEquals(positive.validate(0.5).errors, undefined); // > 0, not >= 1 — fractions pass
   assertEquals(positive.validate(1).errors, undefined);
 
   assertArrayIncludes(positive.validate(NaN).errors!, [isNotPositiveMessage]);

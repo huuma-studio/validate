@@ -47,8 +47,8 @@ export class UuidSchema<T = string> extends PrimitiveSchema<
   }
 }
 
-export function uuid<T = string>(): UuidSchema<T> {
-  return new UuidSchema<T>();
+export function uuid<T = string>(version?: Version): UuidSchema<T> {
+  return new UuidSchema<T>(version);
 }
 
 function _isUuid(version?: Version) {

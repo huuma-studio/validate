@@ -65,19 +65,24 @@ export function number(): NumberSchema {
 }
 
 function _isNumber(value: unknown, key?: string): ValidationError | undefined {
-  if (_isFiniteNumber(value)) {
-    return;
+  if (typeof value !== "number") {
+    return {
+      message: `"${key || "number"}" is not type "number"`,
+    };
   }
-  return {
-    message: `"${key || "number"}" is not type "number"`,
-  };
+  if (!Number.isFinite(value)) {
+    return {
+      message: `"${key || "number"}" is not a finite number`,
+    };
+  }
+  return;
 }
 
 function _isPositive(
   value: unknown,
   key?: string,
 ): ValidationError | undefined {
-  if (_isFiniteNumber(value) && <number> value >= 1) {
+  if (_isFiniteNumber(value) && <number>value > 0) {
     return;
   }
   return {
@@ -89,7 +94,7 @@ function _isNegative(
   value: unknown,
   key?: string,
 ): ValidationError | undefined {
-  if (_isFiniteNumber(value) && <number> value < 0) {
+  if (_isFiniteNumber(value) && <number>value < 0) {
     return;
   }
   return {
@@ -110,7 +115,7 @@ function _isEquals(to: number): Validator {
 
 function _isMin(is: number): Validator {
   return (value: unknown, key?: string) => {
-    if (_isFiniteNumber(value) && <number> value >= is) {
+    if (_isFiniteNumber(value) && <number>value >= is) {
       return;
     }
     return {
@@ -121,7 +126,7 @@ function _isMin(is: number): Validator {
 
 function _isMax(is: number): Validator {
   return (value: unknown, key?: string) => {
-    if (_isFiniteNumber(value) && <number> value <= is) {
+    if (_isFiniteNumber(value) && <number>value <= is) {
       return;
     }
     return {
