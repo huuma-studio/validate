@@ -86,3 +86,9 @@ Deno.test("Array Schema Validation: 'optional'", () => {
   assertEquals(optional.validate([]).errors, undefined);
   assertArrayIncludes(optional.validate(() => {}).errors!, [notArrayMessage]);
 });
+
+Deno.test("Array Schema Validation: optional parse returns undefined for missing input", () => {
+  const optional = new ArraySchema(new StringSchema()).optional();
+
+  assertEquals(optional.parse(undefined), undefined);
+});
