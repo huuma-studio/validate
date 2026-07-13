@@ -68,8 +68,9 @@ export class ArraySchema<
     key?: string,
   ): Validation<T extends Schema<unknown> ? T["infer"][] : undefined> {
     const errors: ValidationError[] = [];
-    const validatedItems = [];
+    let validatedItems: unknown[] | undefined;
     if (this.#property.isRequired || isDefined(toValidate)) {
+      validatedItems = [];
       const validators = [
         ...this.#property.baseValidators,
         ...this.#property.validators,
