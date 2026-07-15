@@ -25,7 +25,7 @@ Deno.test("Boolean Schema Validation: 'isBoolean'", () => {
   const isBoolean = new BooleanSchema();
 
   assertArrayIncludes(isBoolean.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(isBoolean.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(isBoolean.validate(null).errors!, [notBooleanMessage]);
 
   assertArrayIncludes(isBoolean.validate("").errors!, [notBooleanMessage]);
   assertArrayIncludes(isBoolean.validate("Huuma").errors!, [notBooleanMessage]);
@@ -56,7 +56,7 @@ Deno.test("Boolean Schema Validation: 'required'", () => {
   const bool = new BooleanSchema().optional().required();
 
   assertArrayIncludes(bool.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(bool.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(bool.validate(null).errors!, [notBooleanMessage]);
 
   assertArrayIncludes(bool.validate("").errors!, [notBooleanMessage]);
   assertArrayIncludes(bool.validate("Huuma").errors!, [notBooleanMessage]);
@@ -81,7 +81,8 @@ Deno.test("Boolean Schema Validation: 'optional'", () => {
   const bool = new BooleanSchema().optional();
 
   assertEquals(bool.validate(undefined).errors, undefined);
-  assertEquals(bool.validate(null).errors, undefined);
+  assertArrayIncludes(bool.validate(null).errors!, [notBooleanMessage]);
+
 
   assertArrayIncludes(bool.validate("").errors!, [notBooleanMessage]);
   assertArrayIncludes(bool.validate("Huuma").errors!, [notBooleanMessage]);

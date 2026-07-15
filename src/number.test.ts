@@ -33,7 +33,7 @@ Deno.test("Number Schema Validation: 'isNumber'", () => {
   const isNumber = new NumberSchema();
 
   assertArrayIncludes(isNumber.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(isNumber.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(isNumber.validate(null).errors!, [notNumberMessage]);
 
   assertArrayIncludes(isNumber.validate("").errors!, [notNumberMessage]);
   assertArrayIncludes(isNumber.validate("Cargo").errors!, [notNumberMessage]);
@@ -62,7 +62,7 @@ Deno.test("Number Schema Validation: 'required'", () => {
   const required = new NumberSchema().optional().required();
 
   assertArrayIncludes(required.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(required.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(required.validate(null).errors!, [notNumberMessage]);
 
   assertArrayIncludes(required.validate("").errors!, [notNumberMessage]);
   assertArrayIncludes(required.validate("Cargo").errors!, [notNumberMessage]);
@@ -91,7 +91,8 @@ Deno.test("Number Schema Validation: 'optional'", () => {
   const optional = new NumberSchema().optional();
 
   assertEquals(optional.validate(undefined).errors, undefined);
-  assertEquals(optional.validate(null).errors, undefined);
+  assertArrayIncludes(optional.validate(null).errors!, [notNumberMessage]);
+
 
   assertArrayIncludes(optional.validate("").errors!, [notNumberMessage]);
   assertArrayIncludes(optional.validate("Cargo").errors!, [notNumberMessage]);

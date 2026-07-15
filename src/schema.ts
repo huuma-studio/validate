@@ -156,7 +156,7 @@ export abstract class PrimitiveSchema<
 
 export function required(type: string): Validator {
   return (value: unknown, key?: string) => {
-    if (isNotDefined(value)) {
+    if (isUndefined(value)) {
       return {
         message: `"${key || type}" is required`,
       };
@@ -164,12 +164,13 @@ export function required(type: string): Validator {
   };
 }
 
-export function isNotDefined(value: unknown): boolean {
+export function isUndefined(value: unknown): boolean {
   return !isDefined(value);
 }
 
+
 export function isDefined(value: unknown): boolean {
-  return value !== undefined && value !== null;
+  return value !== undefined;
 }
 
 export class ValidationException extends Error {
