@@ -168,7 +168,13 @@ export function isUndefined(value: unknown): boolean {
   return !isDefined(value);
 }
 
-
+/**
+ * Returns whether a value is present.
+ *
+ * Only `undefined` represents an absent value. `null` is considered defined and
+ * is passed to schema validators. This differs from the previous behavior,
+ * which treated both `null` and `undefined` as absent values.
+ */
 export function isDefined(value: unknown): boolean {
   return value !== undefined;
 }
