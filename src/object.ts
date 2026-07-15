@@ -126,7 +126,7 @@ export class ObjectSchema<
         if (result) errors.push(result);
       }
       for (const key in this.#schema) {
-        const toPush = isDefined(toValidate) && typeof toValidate !== "function"
+        const toPush = isDefined(toValidate) && typeof toValidate !== "function" && toValidate !== null
           ? (<Keyable> toValidate)[key]
           : undefined;
 

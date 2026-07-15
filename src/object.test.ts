@@ -28,7 +28,7 @@ Deno.test("Object Schema Validation: 'isObject'", () => {
     .required();
 
   assertArrayIncludes(isObject.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(isObject.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(isObject.validate(null).errors!, [notObjectMessage]);
 
   assertArrayIncludes(isObject.validate("").errors!, [notObjectMessage]);
   assertArrayIncludes(isObject.validate("Cargo").errors!, [notObjectMessage]);
@@ -82,7 +82,7 @@ Deno.test("Object Schema Validation: 'required'", () => {
   });
 
   assertArrayIncludes(required.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(required.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(required.validate(null).errors!, [notObjectMessage]);
 
   assertArrayIncludes(required.validate("").errors!, [notObjectMessage]);
   assertArrayIncludes(required.validate("Cargo").errors!, [notObjectMessage]);
@@ -125,7 +125,7 @@ Deno.test("Object Schema Validation: 'optional'", () => {
   }).optional();
 
   assertEquals(optional.validate(undefined).errors, undefined);
-  assertEquals(optional.validate(null).errors, undefined);
+  assertArrayIncludes(optional.validate(null).errors!, [notObjectMessage]);
 
   assertArrayIncludes(optional.validate("").errors!, [notObjectMessage]);
   assertArrayIncludes(optional.validate("Cargo").errors!, [notObjectMessage]);

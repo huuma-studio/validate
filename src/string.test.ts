@@ -58,7 +58,7 @@ Deno.test("String Schema Validation: 'isString'", () => {
   const isString = new StringSchema();
 
   assertArrayIncludes(isString.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(isString.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(isString.validate(null).errors!, [notStringMessage]);
 
   assertEquals(isString.validate("").errors, undefined);
   assertEquals(isString.validate("Cargo").errors, undefined);
@@ -83,7 +83,7 @@ Deno.test("String Schema Validation: 'required'", () => {
   const required = new StringSchema().optional().required();
 
   assertArrayIncludes(required.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(required.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(required.validate(null).errors!, [notStringMessage]);
 
   assertEquals(required.validate("").errors, undefined);
   assertEquals(required.validate("Cargo").errors, undefined);
@@ -108,7 +108,7 @@ Deno.test("String Schema Validation: 'optional'", () => {
   const optional = new StringSchema().optional();
 
   assertEquals(optional.validate(undefined).errors, undefined);
-  assertEquals(optional.validate(null).errors, undefined);
+  assertArrayIncludes(optional.validate(null).errors!, [notStringMessage]);
 
   assertEquals(optional.validate("").errors, undefined);
   assertEquals(optional.validate("Cargo").errors, undefined);
@@ -134,7 +134,7 @@ Deno.test("String Schema Validation: 'notEmpty'", () => {
   const notEmpty = new StringSchema().notEmpty();
 
   assertArrayIncludes(notEmpty.validate(undefined).errors!, [notEmptyMessage]);
-  assertArrayIncludes(notEmpty.validate(null).errors!, [notEmptyMessage]);
+  assertArrayIncludes(notEmpty.validate(null).errors!, [notStringMessage]);
 
   assertArrayIncludes(notEmpty.validate("").errors!, [notEmptyMessage]);
   assertEquals(notEmpty.validate("Cargo").errors, undefined);
@@ -163,7 +163,6 @@ Deno.test("String Schema Validation: 'empty'", () => {
     notStringMessage,
   ]);
   assertArrayIncludes(empty.validate(null).errors!, [
-    requiredMessage,
     notStringMessage,
   ]);
 
@@ -219,7 +218,6 @@ Deno.test("String Schema Validation: 'notEquals'", () => {
     notStringMessage,
   ]);
   assertArrayIncludes(notEquals.validate(null).errors!, [
-    requiredMessage,
     notStringMessage,
   ]);
 
@@ -250,7 +248,7 @@ Deno.test("String Schema Validation: 'startsWith'", () => {
   assertArrayIncludes(startsWith.validate(undefined).errors!, [
     requiredMessage,
   ]);
-  assertArrayIncludes(startsWith.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(startsWith.validate(null).errors!, [startsWithMessage]);
 
   assertArrayIncludes(startsWith.validate("").errors!, [startsWithMessage]);
   assertEquals(startsWith.validate("Cargo").errors, undefined);
@@ -653,7 +651,6 @@ Deno.test("String Schema Validation: 'length'", () => {
     lengthMessage,
   ]);
   assertArrayIncludes(length.validate(null).errors!, [
-    requiredMessage,
     lengthMessage,
   ]);
 
@@ -717,7 +714,6 @@ Deno.test("String Schema Validation: 'minLength'", () => {
     minLengthMessage,
   ]);
   assertArrayIncludes(minLength.validate(null).errors!, [
-    requiredMessage,
     minLengthMessage,
   ]);
 
@@ -781,7 +777,6 @@ Deno.test("String Schema Validation: 'maxLength'", () => {
     maxLengthMessage,
   ]);
   assertArrayIncludes(maxLength.validate(null).errors!, [
-    requiredMessage,
     maxLengthMessage,
   ]);
 

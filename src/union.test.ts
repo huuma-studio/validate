@@ -182,9 +182,14 @@ Deno.test("Union Schema Validation: with optional values", () => {
 
   // Should pass for valid values including undefined for the optional string
   assertEquals(schema.validate(undefined).errors, undefined);
-  assertEquals(schema.validate(null).errors, undefined);
   assertEquals(schema.validate("hello").errors, undefined);
   assertEquals(schema.validate(42).errors, undefined);
+
+  // Optional schemas only allow undefined; null must still be validated.
+  assertEquals(schema.validate(null).errors, [
+    stringTypeMessage,
+    numberTypeMessage,
+  ]);
 });
 
 Deno.test("Union Schema Validation: with identical types but different constraints", () => {

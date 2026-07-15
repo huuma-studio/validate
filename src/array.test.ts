@@ -16,7 +16,7 @@ Deno.test("Array Schema Validation: 'isArray'", () => {
   const isArray = new ArraySchema(new StringSchema());
 
   assertArrayIncludes(isArray.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(isArray.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(isArray.validate(null).errors!, [notArrayMessage]);
 
   assertArrayIncludes(isArray.validate("").errors!, [notArrayMessage]);
   assertArrayIncludes(isArray.validate("Huuma").errors!, [notArrayMessage]);
@@ -41,7 +41,7 @@ Deno.test("Array Schema Validation: 'required'", () => {
   const required = new ArraySchema(new StringSchema()).optional().required();
 
   assertArrayIncludes(required.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(required.validate(null).errors!, [requiredMessage]);
+  assertArrayIncludes(required.validate(null).errors!, [notArrayMessage]);
 
   assertArrayIncludes(required.validate("").errors!, [notArrayMessage]);
   assertArrayIncludes(required.validate("Huuma").errors!, [notArrayMessage]);
@@ -66,7 +66,7 @@ Deno.test("Array Schema Validation: 'optional'", () => {
   const optional = new ArraySchema(new StringSchema()).optional();
 
   assertEquals(optional.validate(undefined).errors, undefined);
-  assertEquals(optional.validate(null).errors, undefined);
+  assertArrayIncludes(optional.validate(null).errors!, [notArrayMessage]);
 
   assertArrayIncludes(optional.validate("").errors!, [notArrayMessage]);
   assertArrayIncludes(optional.validate("Huuma").errors!, [notArrayMessage]);
