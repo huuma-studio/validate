@@ -4,6 +4,7 @@ import { NumberSchema } from "./number.ts";
 import { BooleanSchema } from "./boolean.ts";
 import { UnionSchema } from "./union.ts";
 import { UndefinedSchema } from "./undefined.ts";
+import { NullSchema } from "./null.ts";
 test("Union JSON Schema: overlapping members use anyOf", () => {
   const schema = new UnionSchema([new StringSchema(), new StringSchema()]);
 
@@ -41,6 +42,21 @@ test("Union Schema Validation: an optional last member makes the union optional"
 
   assert.deepEqual(schema.parse(undefined), undefined);
   assert.deepEqual(schema.isRequired(), false);
+});
+
+test("Union Schema Validation: optional metadata does not bypass member validation", () => {
+  const member = new NullSchema({ isRequired: false, validators: [] });
+  const schema = new UnionSchema([member]);
+  const expected = {
+    value: undefined,
+    errors: [{ message: '"value" is not "null"' }],
+  };
+
+  assert.deepEqual(member.isRequired(), false);
+  assert.deepEqual(member.validate(undefined), expected);
+  assert.deepEqual(schema.parse(null), null);
+  assert.deepEqual(schema.validate(undefined), expected);
+  assert.throws(() => schema.parse(undefined));
 });
 
 test("Union Schema Validation: required members make the union required", () => {

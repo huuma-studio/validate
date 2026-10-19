@@ -34,7 +34,7 @@ export class UnionSchema<
       }) as UnionJSONSchema<T>["anyOf"],
     };
     const property: BaseProperty = {
-      isRequired: isRequired && schemas.every((schema) => schema.isRequired()),
+      isRequired,
       validators: [...validators],
       baseValidators: [required(type)],
     };
@@ -45,6 +45,17 @@ export class UnionSchema<
 
   protected override create(property: Property): this {
     return new UnionSchema(this.#schemas, property) as this;
+  }
+
+  /**
+   * The union is required unless it or one of its members is optional. Only
+   * the union's own flag skips validation; members always decide for
+   * themselves whether they accept `undefined`.
+   */
+  override isRequired(): boolean {
+    return (
+      super.isRequired() && this.#schemas.every((schema) => schema.isRequired())
+    );
   }
 
   validate(value: unknown, key?: string): Validation<SchemaType<T[number]>> {

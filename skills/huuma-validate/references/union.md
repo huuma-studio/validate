@@ -30,7 +30,7 @@ Inherited from `BaseSchema`: `validate`, `parse`, `jsonSchema`, `isRequired`, `t
 
 ## Validation behavior
 
-1. An optional union accepts `undefined` immediately. Otherwise, the value is validated against each member schema.
+1. The value, including `undefined`, is validated against each member schema. A member such as `string().optional()` accepts `undefined` itself; the union never accepts a value that no member accepts. Being optional only affects `isRequired()` and the JSON Schema `required` list.
 2. The **first** member that validates without errors wins — its `value` is returned.
 3. If no member passes, all members' errors are **flattened** and returned as the `errors` array. Members receive the union's `key`, so inside an object the errors name the field (e.g. `"id" is not type "number"`).
 4. A required union passes `undefined` to its members, which report their own validation errors if none accept it. `null` is always passed to the members and succeeds only if a member accepts it.
