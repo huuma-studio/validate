@@ -1,4 +1,5 @@
 import { assert, test } from "vite-plus/test";
+import type { Property } from "./schema.ts";
 import { UndefinedSchema } from "./undefined.ts";
 
 const notUndefinedMessage = {
@@ -75,4 +76,14 @@ test("Undefined JSON Schema: undefined has no JSON value", () => {
   assert.deepEqual(new UndefinedSchema().orNull().jsonSchema(), {
     type: "null",
   });
+});
+
+test("Undefined Schema: 'create' keeps 'orNull'", () => {
+  const orNull = new UndefinedSchema().orNull();
+  const created = (
+    orNull as unknown as { create(property: Property): typeof orNull }
+  ).create({ isRequired: false, validators: [] });
+
+  assert.deepEqual(created.validate(null).errors, undefined);
+  assert.deepEqual(created.jsonSchema(), { type: "null" });
 });

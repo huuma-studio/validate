@@ -14,6 +14,7 @@ export class UndefinedSchema<
   T extends null | undefined = undefined,
 > extends BaseSchema<T> {
   #property: BaseProperty;
+  #allowNull: boolean;
   constructor(
     { isRequired, validators, allowNull }: UndefinedProperty = {
       isRequired: false,
@@ -31,10 +32,14 @@ export class UndefinedSchema<
     // `required` list, so any present value fails `{ not: {} }`.
     super(type, allowNull ? { type: "null" } : { not: {} }, property);
     this.#property = property;
+    this.#allowNull = !!allowNull;
   }
 
   protected override create(property: Property): this {
-    return new UndefinedSchema(property) as this;
+    return new UndefinedSchema({
+      ...property,
+      allowNull: this.#allowNull,
+    }) as this;
   }
 
   override validate(value: unknown, key?: string): Validation<T> {
