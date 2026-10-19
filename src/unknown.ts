@@ -9,7 +9,7 @@ import {
 
 export class UnknownSchema extends BaseSchema<unknown> {
   constructor(
-    { isRequired = false, validators = [] }: Property = {
+    { isRequired = false, validators = [] }: Partial<Property> = {
       isRequired: false,
       validators: [],
     },
@@ -29,9 +29,9 @@ export class UnknownSchema extends BaseSchema<unknown> {
     return new UnknownSchema(property) as this;
   }
 
-  validate(value: unknown, _?: string): Validation<unknown> {
+  validate(value: unknown, _key?: string): Validation<unknown> {
     return {
-      value: <unknown> value,
+      value: <unknown>value,
       errors: undefined,
     };
   }

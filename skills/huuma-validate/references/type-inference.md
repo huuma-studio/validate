@@ -79,7 +79,7 @@ type Order = typeof orderSchema.infer;
 
 ## Alternative extraction forms
 
-If you only have the schema *type* (not an instance), or want to avoid `typeof`:
+If you only have the schema _type_ (not an instance), or want to avoid `typeof`:
 
 ```typescript
 import type { Schema } from "jsr:@huuma/validate";
@@ -115,8 +115,8 @@ function createUser(input: unknown): CreateUser {
 
 ## Gotchas
 
-- **`infer` is a phantom property, not a value.** Don't read it at runtime (`schema.infer` is `undefined`); only its *type* is meaningful. Use `typeof schema.infer`, never `schema.infer` as a value.
+- **`infer` is a phantom property, not a value.** Don't read it at runtime (`schema.infer` is `undefined`); only its _type_ is meaningful. Use `typeof schema.infer`, never `schema.infer` as a value.
 - **Optional properties stay present in the type.** `object({ x: string().optional() }).infer` is `{ x: string | undefined }`, not `{ x?: string }`. The key is always present in the inferred shape; only its value may be `undefined`.
 - **Unknown object keys are not in the type.** `ObjectSchema` only knows about declared keys, so the inferred type lists exactly those keys (see `references/object.md`).
-- **`UnionSchema` has no `.optional()`.** To make a union-typed field optional, wrap it in an `object()` property and call `.optional()` on that property's schema (see `references/union.md`).
+- **`UnionSchema` has no `.optional()`.** Include an optional member, such as `union([string().optional(), number()])`, to make the union accept `undefined`. Enclosing object schemas also omit that field from their JSON Schema `required` list (see `references/union.md`).
 - **Inference is structural, not nominal.** Two different object schemas with the same shape infer the same type — there's no branding. If you need nominal distinction, post-process the type (e.g. `type UserId = string & { readonly __brand: "UserId" }`).

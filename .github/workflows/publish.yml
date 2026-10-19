@@ -1,11 +1,29 @@
-name: Publish
+name: CI and Publish
 on:
+  pull_request:
   push:
     branches:
       - main
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: "1.3.0"
+          node-version: "24"
+          cache: true
+      - run: pnpm check
+      - run: pnpm test
+      - run: pnpm publish:check
+
   publish:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     permissions:
@@ -13,7 +31,12 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: "1.3.0"
+          node-version: "24"
+          cache: true
 
       - name: Publish package
-        run: npx jsr publish
+        run: pnpm release

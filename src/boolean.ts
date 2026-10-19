@@ -34,12 +34,14 @@ export class BooleanSchema<T = boolean> extends PrimitiveSchema<
     return new BooleanSchema(property) as this;
   }
 
-  true(): BooleanSchema<true> {
-    return <BooleanSchema<true>> this.validator(_isTrue);
+  true(): BooleanSchema<true | Extract<T, undefined>> {
+    return <BooleanSchema<true | Extract<T, undefined>>>this.validator(_isTrue);
   }
 
-  false(): BooleanSchema<false> {
-    return <BooleanSchema<false>> this.validator(_isFalse);
+  false(): BooleanSchema<false | Extract<T, undefined>> {
+    return <BooleanSchema<false | Extract<T, undefined>>>(
+      this.validator(_isFalse)
+    );
   }
 }
 

@@ -1,69 +1,61 @@
-import { assertEquals } from "@std/assert/equals";
+import { assert, describe, test } from "vite-plus/test";
 import { LiteralSchema } from "./literal.ts";
-import { assertThrows } from "@std/assert/throws";
-
-Deno.test(LiteralSchema.name, async (t) => {
-  await t.step("should return correct toString value (number)", () => {
+describe(LiteralSchema.name, () => {
+  test("should return correct toString value (number)", () => {
     const literal = new LiteralSchema(2);
-    assertEquals(literal.toString(), "literal:2");
+    assert.deepEqual(literal.toString(), "literal:2");
   });
 
-  await t.step("should validate literal number 2", () => {
+  test("should validate literal number 2", () => {
     const literal = new LiteralSchema(2);
-    assertEquals(literal.validate(2).value, 2);
+    assert.deepEqual(literal.validate(2).value, 2);
   });
 
-  await t.step("should return correct toString value (string)", () => {
+  test("should return correct toString value (string)", () => {
     const literal = new LiteralSchema("Hello World");
-    assertEquals(literal.toString(), "literal:Hello World");
+    assert.deepEqual(literal.toString(), "literal:Hello World");
   });
-  await t.step('should validate literal string "Hello World"', () => {
+  test('should validate literal string "Hello World"', () => {
     const literal = new LiteralSchema("Hello World");
     const validation = literal.validate("Hello World");
-    assertEquals(validation.value, "Hello World");
-    assertEquals(validation.errors, undefined);
+    assert.deepEqual(validation.value, "Hello World");
+    assert.deepEqual(validation.errors, undefined);
   });
 
-  await t.step('should parse literal string "Hello World"', () => {
+  test('should parse literal string "Hello World"', () => {
     const literal = new LiteralSchema("Hello World");
     const parsed = literal.parse("Hello World");
-    assertEquals(parsed, "Hello World");
+    assert.deepEqual(parsed, "Hello World");
   });
 
-  await t.step("should allow undefined", () => {
+  test("should allow undefined", () => {
     const literal = new LiteralSchema(2).optional();
-    assertEquals(literal.validate(undefined).value, undefined);
+    assert.deepEqual(literal.validate(undefined).value, undefined);
   });
 
-  await t.step(
-    "should throw exception if schema is optional but wrong number",
-    () => {
-      const optionalLiteral = new LiteralSchema(2).optional();
+  test("should throw exception if schema is optional but wrong number", () => {
+    const optionalLiteral = new LiteralSchema(2).optional();
 
-      assertEquals(optionalLiteral.parse(undefined), undefined);
-    },
-  );
-  await t.step(
-    "should throw exception if schema is optional but wrong number",
-    () => {},
-  );
+    assert.deepEqual(optionalLiteral.parse(undefined), undefined);
+  });
+  test("should throw exception if schema is optional but wrong number", () => {});
 
-  await t.step("should throw expection if wrong number literal", () => {
-    assertThrows(() => {
+  test("should throw expection if wrong number literal", () => {
+    assert.throws(() => {
       const literal = new LiteralSchema(2);
       literal.parse(3);
     });
   });
 
-  await t.step("should throw expection if input value is NaN", () => {
-    assertThrows(() => {
+  test("should throw expection if input value is NaN", () => {
+    assert.throws(() => {
       const literal = new LiteralSchema(2);
       literal.parse(NaN);
     });
   });
 
-  await t.step("should throw expection if wrong string literal", () => {
-    assertThrows(() => {
+  test("should throw expection if wrong string literal", () => {
+    assert.throws(() => {
       const literal = new LiteralSchema(2);
       literal.parse("2");
     });

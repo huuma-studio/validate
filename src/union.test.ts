@@ -1,10 +1,70 @@
-import { assertArrayIncludes } from "@std/assert/array-includes";
-import { assertEquals } from "@std/assert/equals";
+import { assert, test } from "vite-plus/test";
 import { StringSchema } from "./string.ts";
 import { NumberSchema } from "./number.ts";
 import { BooleanSchema } from "./boolean.ts";
 import { UnionSchema } from "./union.ts";
-import { assertThrows } from "@std/assert";
+import { UndefinedSchema } from "./undefined.ts";
+import { NullSchema } from "./null.ts";
+test("Union JSON Schema: overlapping members use anyOf", () => {
+  const schema = new UnionSchema([new StringSchema(), new StringSchema()]);
+
+  assert.deepEqual(schema.parse("hello"), "hello");
+  assert.deepEqual(schema.jsonSchema(), {
+    anyOf: [{ type: "string" }, { type: "string" }],
+  });
+});
+
+test("Union JSON Schema: disjoint members also use anyOf", () => {
+  const schema = new UnionSchema([new StringSchema(), new NumberSchema()]);
+
+  assert.deepEqual(schema.parse("hello"), "hello");
+  assert.deepEqual(schema.parse(42), 42);
+  assert.deepEqual(schema.jsonSchema(), {
+    anyOf: [{ type: "string" }, { type: "number" }],
+  });
+});
+
+test("Union Schema Validation: an optional first member makes the union optional", () => {
+  const schema = new UnionSchema([
+    new StringSchema().optional(),
+    new NumberSchema(),
+  ]);
+
+  assert.deepEqual(schema.parse(undefined), undefined);
+  assert.deepEqual(schema.isRequired(), false);
+});
+
+test("Union Schema Validation: an optional last member makes the union optional", () => {
+  const schema = new UnionSchema([
+    new NumberSchema(),
+    new StringSchema().optional(),
+  ]);
+
+  assert.deepEqual(schema.parse(undefined), undefined);
+  assert.deepEqual(schema.isRequired(), false);
+});
+
+test("Union Schema Validation: optional metadata does not bypass member validation", () => {
+  const member = new NullSchema({ isRequired: false, validators: [] });
+  const schema = new UnionSchema([member]);
+  const expected = {
+    value: undefined,
+    errors: [{ message: '"value" is not "null"' }],
+  };
+
+  assert.deepEqual(member.isRequired(), false);
+  assert.deepEqual(member.validate(undefined), expected);
+  assert.deepEqual(schema.parse(null), null);
+  assert.deepEqual(schema.validate(undefined), expected);
+  assert.throws(() => schema.parse(undefined));
+});
+
+test("Union Schema Validation: required members make the union required", () => {
+  assert.deepEqual(
+    new UnionSchema([new StringSchema(), new NumberSchema()]).isRequired(),
+    true,
+  );
+});
 
 // Define error messages to match those from underlying schemas
 const stringTypeMessage = {
@@ -14,34 +74,28 @@ const numberTypeMessage = {
   message: '"number" is not type "number"',
 };
 
-Deno.test("Union Schema Validation: 'toString'", () => {
-  const schema = new UnionSchema([
-    new StringSchema(),
-    new NumberSchema(),
-  ]);
-  assertEquals(schema.toString(), "union:string,number");
+test("Union Schema Validation: 'toString'", () => {
+  const schema = new UnionSchema([new StringSchema(), new NumberSchema()]);
+  assert.deepEqual(schema.toString(), "union:string,number");
 });
 
-Deno.test("Union Schema Validation: basic validation with string and number", () => {
-  const schema = new UnionSchema([
-    new StringSchema(),
-    new NumberSchema(),
-  ]);
+test("Union Schema Validation: basic validation with string and number", () => {
+  const schema = new UnionSchema([new StringSchema(), new NumberSchema()]);
 
   // Should pass for string values
-  assertEquals(schema.validate("hello").errors, undefined);
-  assertEquals(schema.validate("").errors, undefined);
+  assert.deepEqual(schema.validate("hello").errors, undefined);
+  assert.deepEqual(schema.validate("").errors, undefined);
 
   // Should pass for number values
-  assertEquals(schema.validate(0).errors, undefined);
-  assertEquals(schema.validate(42).errors, undefined);
-  assertEquals(schema.validate(-10).errors, undefined);
+  assert.deepEqual(schema.validate(0).errors, undefined);
+  assert.deepEqual(schema.validate(42).errors, undefined);
+  assert.deepEqual(schema.validate(-10).errors, undefined);
 
   // Should fail for other types
   const undefinedErrors = schema.validate(undefined).errors!;
   const nullErrors = schema.validate(null).errors!;
-  assertEquals(undefinedErrors.length > 0, true);
-  assertEquals(nullErrors.length > 0, true);
+  assert.deepEqual(undefinedErrors.length > 0, true);
+  assert.deepEqual(nullErrors.length > 0, true);
 
   // Test non-string, non-number values
   const boolErrors = schema.validate(true).errors!;
@@ -49,42 +103,37 @@ Deno.test("Union Schema Validation: basic validation with string and number", ()
   const arrErrors = schema.validate([]).errors!;
   const fnErrors = schema.validate(() => {}).errors!;
 
-  assertArrayIncludes(boolErrors, [stringTypeMessage, numberTypeMessage]);
-  assertArrayIncludes(objErrors, [
-    stringTypeMessage,
-    numberTypeMessage,
-  ]);
-  assertArrayIncludes(arrErrors, [
-    stringTypeMessage,
-    numberTypeMessage,
-  ]);
-  assertArrayIncludes(fnErrors, [
-    stringTypeMessage,
-    numberTypeMessage,
-  ]);
+  assert.includeDeepMembers(boolErrors, [stringTypeMessage, numberTypeMessage]);
+  assert.includeDeepMembers(objErrors, [stringTypeMessage, numberTypeMessage]);
+  assert.includeDeepMembers(arrErrors, [stringTypeMessage, numberTypeMessage]);
+  assert.includeDeepMembers(fnErrors, [stringTypeMessage, numberTypeMessage]);
 });
 
-Deno.test("Union Schema Validation: with validation rules", () => {
+test("Union Schema Validation: with validation rules", () => {
   const schema = new UnionSchema([
     new StringSchema().notEmpty(),
     new NumberSchema().positive(),
   ]);
 
   // Should pass for valid values
-  assertEquals(schema.validate("hello").errors, undefined);
-  assertEquals(schema.validate(42).errors, undefined);
+  assert.deepEqual(schema.validate("hello").errors, undefined);
+  assert.deepEqual(schema.validate(42).errors, undefined);
 
   // Should fail for values that don't meet validation rules
   const emptyStringErrors = schema.validate("").errors!;
   const negativeNumberErrors = schema.validate(-10).errors!;
 
-  assertArrayIncludes(emptyStringErrors, [{ message: '"string" is empty' }]);
-  assertArrayIncludes(negativeNumberErrors, [{
-    message: '"number" is not positive',
-  }]);
+  assert.includeDeepMembers(emptyStringErrors, [
+    { message: '"string" is empty' },
+  ]);
+  assert.includeDeepMembers(negativeNumberErrors, [
+    {
+      message: '"number" is not positive',
+    },
+  ]);
 });
 
-Deno.test("Union Schema Validation: with three types", () => {
+test("Union Schema Validation: with three types", () => {
   const schema = new UnionSchema([
     new StringSchema(),
     new NumberSchema(),
@@ -92,10 +141,10 @@ Deno.test("Union Schema Validation: with three types", () => {
   ]);
 
   // Should pass for all three types
-  assertEquals(schema.validate("hello").errors, undefined);
-  assertEquals(schema.validate(42).errors, undefined);
-  assertEquals(schema.validate(true).errors, undefined);
-  assertEquals(schema.validate(false).errors, undefined);
+  assert.deepEqual(schema.validate("hello").errors, undefined);
+  assert.deepEqual(schema.validate(42).errors, undefined);
+  assert.deepEqual(schema.validate(true).errors, undefined);
+  assert.deepEqual(schema.validate(false).errors, undefined);
 
   // Should fail for other types
   const undefinedErrors = schema.validate(undefined).errors!;
@@ -103,56 +152,53 @@ Deno.test("Union Schema Validation: with three types", () => {
   const objErrors = schema.validate({}).errors!;
   const arrErrors = schema.validate([]).errors!;
 
-  assertEquals(undefinedErrors.length > 0, true);
-  assertEquals(nullErrors.length > 0, true);
-  assertArrayIncludes(objErrors, [stringTypeMessage]);
-  assertArrayIncludes(arrErrors, [stringTypeMessage]);
+  assert.deepEqual(undefinedErrors.length > 0, true);
+  assert.deepEqual(nullErrors.length > 0, true);
+  assert.includeDeepMembers(objErrors, [stringTypeMessage]);
+  assert.includeDeepMembers(arrErrors, [stringTypeMessage]);
 });
 
-Deno.test("Union Schema Validation: empty schema array", () => {
+test("Union Schema Validation: empty schema array", () => {
   const schema = new UnionSchema([]);
 
   // All values should fail with an empty schema array
-  assertArrayIncludes(schema.validate("hello").errors!, []);
-  assertArrayIncludes(schema.validate(42).errors!, []);
-  assertArrayIncludes(schema.validate(true).errors!, []);
+  assert.includeDeepMembers(schema.validate("hello").errors!, []);
+  assert.includeDeepMembers(schema.validate(42).errors!, []);
+  assert.includeDeepMembers(schema.validate(true).errors!, []);
 });
 
-Deno.test("Union Schema Validation: parsing valid values", () => {
-  const schema = new UnionSchema([
-    new StringSchema(),
-    new NumberSchema(),
-  ]);
+test("Union Schema Validation: parsing valid values", () => {
+  const schema = new UnionSchema([new StringSchema(), new NumberSchema()]);
 
   // Should successfully parse valid values
-  assertEquals(schema.parse("hello"), "hello");
-  assertEquals(schema.parse(42), 42);
+  assert.deepEqual(schema.parse("hello"), "hello");
+  assert.deepEqual(schema.parse(42), 42);
 
   // Should throw for invalid values
   try {
     schema.parse(undefined);
-    assertEquals(true, false, "Should have thrown an error");
+    assert.deepEqual(true, false, "Should have thrown an error");
   } catch (error) {
     if (error instanceof Error) {
-      assertEquals(error.message.length > 0, true);
+      assert.deepEqual(error.message.length > 0, true);
     } else {
-      assertEquals(true, false, "Error is not an instance of Error");
+      assert.deepEqual(true, false, "Error is not an instance of Error");
     }
   }
 });
 
-Deno.test("Union Schema Validation: with complex validation rules", () => {
+test("Union Schema Validation: with complex validation rules", () => {
   const schema = new UnionSchema([
     new StringSchema().regex(/^[A-Z][a-z]+$/),
     new NumberSchema().min(0).max(100),
   ]);
 
   // Should pass for valid values
-  assertEquals(schema.validate("Hello").errors, undefined);
-  assertEquals(schema.validate("World").errors, undefined);
-  assertEquals(schema.validate(0).errors, undefined);
-  assertEquals(schema.validate(50).errors, undefined);
-  assertEquals(schema.validate(100).errors, undefined);
+  assert.deepEqual(schema.validate("Hello").errors, undefined);
+  assert.deepEqual(schema.validate("World").errors, undefined);
+  assert.deepEqual(schema.validate(0).errors, undefined);
+  assert.deepEqual(schema.validate(50).errors, undefined);
+  assert.deepEqual(schema.validate(100).errors, undefined);
 
   // Should fail for invalid values
   const lowercaseErrors = schema.validate("hello").errors!;
@@ -160,61 +206,73 @@ Deno.test("Union Schema Validation: with complex validation rules", () => {
   const negativeNumberErrors = schema.validate(-1).errors!;
   const tooLargeNumberErrors = schema.validate(101).errors!;
 
-  assertArrayIncludes(lowercaseErrors, [{
-    message: '"string" does not match regex "/^[A-Z][a-z]+$/"',
-  }]);
-  assertArrayIncludes(numericStringErrors, [{
-    message: '"string" does not match regex "/^[A-Z][a-z]+$/"',
-  }]);
-  assertArrayIncludes(negativeNumberErrors, [{
-    message: '"number" is smaller than 0',
-  }]);
-  assertArrayIncludes(tooLargeNumberErrors, [{
-    message: '"number" is bigger than 100',
-  }]);
+  assert.includeDeepMembers(lowercaseErrors, [
+    {
+      message: '"string" does not match regex "/^[A-Z][a-z]+$/"',
+    },
+  ]);
+  assert.includeDeepMembers(numericStringErrors, [
+    {
+      message: '"string" does not match regex "/^[A-Z][a-z]+$/"',
+    },
+  ]);
+  assert.includeDeepMembers(negativeNumberErrors, [
+    {
+      message: '"number" is smaller than 0',
+    },
+  ]);
+  assert.includeDeepMembers(tooLargeNumberErrors, [
+    {
+      message: '"number" is bigger than 100',
+    },
+  ]);
 });
 
-Deno.test("Union Schema Validation: with optional values", () => {
+test("Union Schema Validation: with optional values", () => {
   const schema = new UnionSchema([
     new StringSchema().optional(),
     new NumberSchema(),
   ]);
 
   // Should pass for valid values including undefined for the optional string
-  assertEquals(schema.validate(undefined).errors, undefined);
-  assertEquals(schema.validate("hello").errors, undefined);
-  assertEquals(schema.validate(42).errors, undefined);
+  assert.deepEqual(schema.validate(undefined).errors, undefined);
+  assert.deepEqual(schema.validate("hello").errors, undefined);
+  assert.deepEqual(schema.validate(42).errors, undefined);
 
   // Optional schemas only allow undefined; null must still be validated.
-  assertEquals(schema.validate(null).errors, [
+  assert.deepEqual(schema.validate(null).errors, [
     stringTypeMessage,
     numberTypeMessage,
   ]);
 });
 
-Deno.test("Union Schema Validation: with identical types but different constraints", () => {
+test("Union Schema Validation: with identical types but different constraints", () => {
   const schema = new UnionSchema([
     new StringSchema().equals("yes"),
     new StringSchema().equals("no"),
   ]);
 
   // Should pass for valid values
-  assertEquals(schema.validate("yes").errors, undefined);
-  assertEquals(schema.validate("no").errors, undefined);
+  assert.deepEqual(schema.validate("yes").errors, undefined);
+  assert.deepEqual(schema.validate("no").errors, undefined);
 
   // Should fail for invalid values
   const maybeErrors = schema.validate("maybe").errors!;
-  assertArrayIncludes(maybeErrors, [{
-    message: '"string" is not equals "yes"',
-  }]);
-  assertArrayIncludes(maybeErrors, [{
-    message: '"string" is not equals "no"',
-  }]);
+  assert.includeDeepMembers(maybeErrors, [
+    {
+      message: '"string" is not equals "yes"',
+    },
+  ]);
+  assert.includeDeepMembers(maybeErrors, [
+    {
+      message: '"string" is not equals "no"',
+    },
+  ]);
 });
 
-Deno.test("Union Schema Validation: broken schema", () => {
+test("Union Schema Validation: broken schema", () => {
   // Testing a schema with a bug to check error handling
-  assertThrows(() => {
+  assert.throws(() => {
     new UnionSchema([
       // @ts-ignore - Intentionally test with a non-schema object
       {
@@ -225,4 +283,74 @@ Deno.test("Union Schema Validation: broken schema", () => {
       },
     ]);
   });
+});
+
+test("Union Schema Validation: member errors use the key passed in", () => {
+  const schema = new UnionSchema([new StringSchema(), new NumberSchema()]);
+
+  assert.deepEqual(schema.validate(true, "id").errors, [
+    { message: '"id" is not type "string"' },
+    { message: '"id" is not type "number"' },
+  ]);
+});
+
+test("Union Schema Validation: an undefined member makes the union optional", () => {
+  const schema = new UnionSchema([new StringSchema(), new UndefinedSchema()]);
+
+  assert.deepEqual(schema.parse(undefined), undefined);
+  assert.deepEqual(schema.isRequired(), false);
+});
+
+test("Union JSON Schema: an undefined member does not allow null", () => {
+  const schema = new UnionSchema([new StringSchema(), new UndefinedSchema()]);
+
+  assert.isDefined(schema.validate(null).errors);
+  assert.deepEqual(schema.jsonSchema(), {
+    anyOf: [{ type: "string" }, { not: {} }],
+  });
+});
+
+test("Union JSON Schema: an undefined-or-null member allows null", () => {
+  const schema = new UnionSchema([
+    new StringSchema(),
+    new UndefinedSchema().orNull(),
+  ]);
+
+  assert.deepEqual(schema.validate(null).errors, undefined);
+  assert.deepEqual(schema.jsonSchema(), {
+    anyOf: [{ type: "string" }, { type: "null" }],
+  });
+});
+
+test("Union Schema Validation: stops at the first passing member", () => {
+  let calls = 0;
+  const counting = new StringSchema().custom(() => {
+    calls++;
+    return undefined;
+  });
+  const schema = new UnionSchema([new StringSchema(), counting]);
+
+  assert.deepEqual(schema.parse("Huuma"), "Huuma");
+  assert.deepEqual(calls, 0);
+});
+
+test("Union Schema Validation: duplicate member errors are reported once", () => {
+  const schema = new UnionSchema([new StringSchema(), new NumberSchema()]);
+
+  assert.deepEqual(schema.validate(undefined, "id").errors, [
+    { message: '"id" is required' },
+    { message: '"id" is not type "string"' },
+    { message: '"id" is not type "number"' },
+  ]);
+});
+
+test("Union Schema Validation: an empty union fails with a message", () => {
+  const schema = new UnionSchema([]);
+
+  assert.deepEqual(schema.validate("hello", "id").errors, [
+    { message: '"id" cannot match an empty union' },
+  ]);
+  assert.deepEqual(schema.validate(undefined).errors, [
+    { message: '"union" cannot match an empty union' },
+  ]);
 });

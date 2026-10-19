@@ -22,12 +22,12 @@ class LiteralSchema<T extends string | number | undefined> extends BaseSchema<T,
 
 ## Methods
 
-| Method | Signature | Behavior |
-|--------|-----------|----------|
-| `required()` | `(): LiteralSchema<Exclude<T, undefined>>` | mark required |
-| `optional()` | `(): LiteralSchema<T \| undefined>` | mark optional |
-| `validate(value, key?)` | `(): Validation<T>` | run base + custom validators |
-| `jsonSchema()` | `(): LiteralJSONSchema<T>` | `{ type, const: value }` |
+| Method                  | Signature                                  | Behavior                     |
+| ----------------------- | ------------------------------------------ | ---------------------------- |
+| `required()`            | `(): LiteralSchema<Exclude<T, undefined>>` | mark required                |
+| `optional()`            | `(): LiteralSchema<T \| undefined>`        | mark optional                |
+| `validate(value, key?)` | `(): Validation<T>`                        | run base + custom validators |
+| `jsonSchema()`          | `(): LiteralJSONSchema<T>`                 | `{ type, const: value }`     |
 
 Inherited: `parse`, `isRequired`, `toString`, `custom` — **no**; extends `BaseSchema` directly, no `.custom()`.
 

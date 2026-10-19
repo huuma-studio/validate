@@ -46,7 +46,16 @@ Remember `UnionSchema` has no `.optional()`; wrap in an object field for optiona
 
 ## Nullable field
 
-There's no first-class "nullable" — `null` and `undefined` are both treated as absent. To explicitly accept `null`, use `undef().orNull()` or include `nil()` in a `union`.
+There's no first-class "nullable". Only `undefined` is absent; `null` is a value and fails unless a schema accepts it, so `.optional()` alone does **not** allow `null`.
+
+```typescript
+const profile = object({
+  nickname: union([string(), nullish.null()]),        // string or null, must be present
+  avatar: union([url(), nullish.undefined().orNull()]), // url, null, or absent
+});
+```
+
+Include `nullish.null()` in a `union` to accept `null`, and add `nullish.undefined()` (or use `nullish.undefined().orNull()`) to also allow the field to be absent.
 
 ## Strict unknown-key rejection
 

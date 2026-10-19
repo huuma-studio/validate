@@ -10,12 +10,14 @@ interface UndefinedProperty extends Property {
   allowNull?: boolean;
 }
 
-export class UndefinedSchema<T extends null | undefined = undefined>
-  extends BaseSchema<T> {
+export class UndefinedSchema<
+  T extends null | undefined = undefined,
+> extends BaseSchema<T> {
   #property: BaseProperty;
+  #allowNull: boolean;
   constructor(
     { isRequired, validators, allowNull }: UndefinedProperty = {
-      isRequired: true,
+      isRequired: false,
       validators: [],
       allowNull: false,
     },
@@ -26,13 +28,18 @@ export class UndefinedSchema<T extends null | undefined = undefined>
       validators: [...validators],
       baseValidators: [allowNull ? _isUndefinedOrNull : _isUndefined],
     };
-    // TODO: Whats the correct way to handle undefined values in json schema?
-    super(type, { type: "null" }, property);
+    // JSON has no undefined value: absence is expressed by an object's
+    // `required` list, so any present value fails `{ not: {} }`.
+    super(type, allowNull ? { type: "null" } : { not: {} }, property);
     this.#property = property;
+    this.#allowNull = !!allowNull;
   }
 
   protected override create(property: Property): this {
-    return new UndefinedSchema(property) as this;
+    return new UndefinedSchema({
+      ...property,
+      allowNull: this.#allowNull,
+    }) as this;
   }
 
   override validate(value: unknown, key?: string): Validation<T> {
@@ -57,6 +64,7 @@ export class UndefinedSchema<T extends null | undefined = undefined>
   }
 }
 
+/** @deprecated Use `nullish.undefined()` instead. */
 export function undef(): UndefinedSchema<undefined> {
   return new UndefinedSchema();
 }

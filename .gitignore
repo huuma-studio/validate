@@ -1,3 +1,7 @@
 deno.lock
+node_modules/
+.vite/
+.vite-plus/
+coverage/
 .DS_Store
 .zed/*

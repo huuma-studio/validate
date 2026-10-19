@@ -22,21 +22,21 @@ class StringSchema<T = string> extends PrimitiveSchema<T, StringSchema<string>, 
 
 ## Methods
 
-| Method | Signature | Error message |
-|--------|-----------|---------------|
-| `notEmpty()` | `(): this` | `"${key\|"string"}" is empty` (when `""`, `null`, or `undefined`) |
-| `empty()` | `(): this` | `"${key\|"string"}" is not empty` |
-| `equals(to)` | `(to: string): this` | `"${key\|"string"}" is not equals "${to}"` |
-| `notEquals(to)` | `(to: string): this` | `"${key\|"string"}" is equals "${to}"` |
-| `startsWith(needle)` | `(needle: string): this` | `"${key\|"string"}" does not start with "${needle}"` |
-| `endsWith(needle)` | `(needle: string): this` | `"${key\|"string"}" does not end with "${needle}"` |
-| `regex(re)` | `(regex: RegExp): this` | `"${key\|"string"}" does not match regex "${regex}"` |
-| `length(n)` | `(n: number): this` | `"${key\|"string"}" length is not ${n}` |
-| `minLength(n)` | `(n: number): this` | `"${key\|"string"}" length is less than ${n}` |
-| `maxLength(n)` | `(n: number): this` | `"${key\|"string"}" length is greater than ${n}` |
-| `custom(v)` | `(validator: Validator): this` | your message |
-| `optional()` | `(): StringSchema<string\|undefined>` | — |
-| `required()` | `(): StringSchema<string>` | — |
+| Method               | Signature                             | Error message                                                     |
+| -------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| `notEmpty()`         | `(): this`                            | `"${key\|"string"}" is empty` (when `""`, `null`, or `undefined`) |
+| `empty()`            | `(): this`                            | `"${key\|"string"}" is not empty`                                 |
+| `equals(to)`         | `(to: string): this`                  | `"${key\|"string"}" is not equals "${to}"`                        |
+| `notEquals(to)`      | `(to: string): this`                  | `"${key\|"string"}" is equals "${to}"`                            |
+| `startsWith(needle)` | `(needle: string): this`              | `"${key\|"string"}" does not start with "${needle}"`              |
+| `endsWith(needle)`   | `(needle: string): this`              | `"${key\|"string"}" does not end with "${needle}"`                |
+| `regex(re)`          | `(regex: RegExp): this`               | `"${key\|"string"}" does not match regex "${regex}"`              |
+| `length(n)`          | `(n: number): this`                   | `"${key\|"string"}" length is not ${n}`                           |
+| `minLength(n)`       | `(n: number): this`                   | `"${key\|"string"}" length is less than ${n}`                     |
+| `maxLength(n)`       | `(n: number): this`                   | `"${key\|"string"}" length is greater than ${n}`                  |
+| `custom(v)`          | `(validator: Validator): this`        | your message                                                      |
+| `optional()`         | `(): StringSchema<string\|undefined>` | —                                                                 |
+| `required()`         | `(): StringSchema<string>`            | —                                                                 |
 
 Inherited from `BaseSchema`: `validate`, `parse`, `jsonSchema`, `isRequired`.
 
@@ -44,9 +44,11 @@ Inherited from `BaseSchema`: `validate`, `parse`, `jsonSchema`, `isRequired`.
 
 The type check `_isString` runs first: if `typeof value !== "string"` → `"${key|"string"}" is not type "string"`. Then each chained constraint runs **in sequence, with no short-circuit** — every validator runs and every error is collected. A non-string value still gets passed to the chained validators (length/prefix/regex checks), which may add further errors, so a single invalid value commonly produces several errors. See `references/schema.md` for the error-accumulation rules.
 
+`regex(re)` keeps an internal copy of the pattern and resets its `lastIndex` before each validation. Global and sticky regexes give consistent results across repeated calls without changing the caller's regex state.
+
 ## Length semantics
 
-All length checks use **UTF-16 code units** (i.e. native `value.length`). Astral characters (surrogate pairs) count as **2**. `startsWith`/`endsWith` also walk UTF-16 code units via direct index access (safe against `String.prototype` pollution).
+All length checks use **UTF-16 code units** (i.e. native `value.length`). Astral characters (surrogate pairs) count as **2**. `startsWith`/`endsWith` call the native `String.prototype` methods after a `typeof value === "string"` check, so they compare UTF-16 code units too. Look-alike objects carrying their own `startsWith`/`endsWith` are rejected before any method is called, and `Object.prototype` pollution cannot change the result. They do not defend against code that overwrites `String.prototype` itself — no validator in the library does.
 
 ## Examples
 
@@ -74,7 +76,7 @@ const noProfanity = string().custom((value, key) =>
 // Optional
 const maybe = string().optional();
 maybe.validate(undefined); // { value: undefined, errors: undefined }
-maybe.validate(null);      // { value: undefined, errors: undefined } (null treated as absent)
+maybe.validate(null);      // validation error: null is not a string
 ```
 
 ## JSON Schema
