@@ -38,6 +38,7 @@ Inherited: `parse`, `isRequired`, `toString`.
 
 1. `required(type)` + `_isObject` run first.
    - `_isObject` requires `typeof value === "object"`, not `Array.isArray(value)`, and not `null`. Arrays and `null` → `"${key|"object"}" not type "object"`.
+   - If the value is not an object, validation stops here: the property schemas are **not** run, so you get the object-level errors only.
 2. For each **declared** key in the schema map, the value at that key is passed to the property's schema with `key` = the property name.
    - Missing/absent properties follow each property schema's required/optional rules.
 3. On success, returns a **new object** containing only the declared keys with their validated values. **Unknown input properties are dropped** — not validated, not copied through, and **not** an error.
@@ -45,7 +46,7 @@ Inherited: `parse`, `isRequired`, `toString`.
 
 ## Absence & optionality
 
-- The **whole object** can be `.optional()` (skips validation when `null`/`undefined`).
+- The **whole object** can be `.optional()` (skips validation when `undefined`; `null` still fails with `not type "object"`).
 - Individual **properties** are optional/required via their own schema's `.optional()`/`.required()`. A required property that is absent yields `"<prop>" is required`.
 
 ## Examples
@@ -73,13 +74,9 @@ user.validate({ age: 25 });           // absent required field — multiple erro
 //   { message: '"username" is empty' }
 // ]
 user.validate({ username: "j", age: 15 }); // errors: [{ message: '"age" is smaller than 18' }]
-user.validate(null);                   // cascades: object-level + every required field fails:
-// errors: [
-//   { message: '"object" is required' },
-//   { message: '"object" not type "object"' },
-//   { message: '"username" is required' }, { message: '"username" is not type "string"' }, { message: '"username" is empty' },
-//   { message: '"age" is required' }, { message: '"age" is not type "number"' }, { message: '"age" is smaller than 18' }
-// ]  (root key falls back to the type name "object", not a path)
+user.validate(null);                   // non-object: properties are not validated
+// errors: [{ message: '"object" not type "object"' }]
+// (root key falls back to the type name "object", not a path)
 
 // Unknown keys are ignored
 user.validate({ username: "j", age: 20, extra: "ignored" });

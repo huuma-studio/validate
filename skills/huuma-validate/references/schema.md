@@ -30,10 +30,10 @@ interface BaseProperty   extends Property { baseValidators: Validator[]; }
 
 Abstract base for every schema. Key methods available on **all** schemas:
 
-- `validate(value, key?): Validation<T>` — abstract; returns `{ value, errors }`.
+- `validate(value, key?): Validation<T>` — runs `baseValidators` then `validators` and returns `{ value, errors }`. Skipped entirely when the value is `undefined` **and** the schema is optional. `ObjectSchema`, `ArraySchema`, `UnionSchema`, `NullSchema`, `UndefinedSchema`, and `UnknownSchema` override it.
 - `parse(value): T` — calls `validate`; throws `ValidationException` on failure, else returns `value`.
 - `jsonSchema(): J` — returns the cached JSON Schema object.
-- `isRequired(): boolean` — whether the schema rejects `null`/`undefined`.
+- `isRequired(): boolean` — whether the schema rejects `undefined`.
 - `toString(): string` — the schema's type label (used in error messages and union labels).
 
 `#jsonSchema`, `#type`, and `#property` are private. Constraint methods on subclasses return **new** instances via the protected `create(property)` method — schemas are immutable.
@@ -45,7 +45,7 @@ Extends `BaseSchema`. Adds the optionality + custom-validator API used by `Strin
 - `custom(validator: Validator): this` — append an arbitrary validator. Return `{ message }` to fail, `undefined` to pass.
 - `required(): R` — mark required; narrows the type (removes `undefined`).
 - `optional(): O` — mark optional; widens the type to `T | undefined`.
-- `validate(value, key?): Validation<T>` — runs `baseValidators` then `validators`. Skipped entirely when the value is absent (`undefined`/`null`) **and** the schema is optional.
+- `validate(value, key?): Validation<T>` — inherited from `BaseSchema`; `PrimitiveSchema` prepends the `required(type)` base validator.
 
 ## ValidationException
 
@@ -61,10 +61,12 @@ Thrown by `parse()`. Inspect `e.errors` for the structured `ValidationError[]`.
 ## Helpers
 
 - `required(type): Validator` — produces `"${key || type}" is required` when value is absent.
-- `isDefined(value): boolean` — `value !== undefined && value !== null`.
-- `isNotDefined(value): boolean` — `!isDefined(value)`.
+- `isDefined(value): boolean` — `value !== undefined`.
+- `isUndefined(value): boolean` — `!isDefined(value)`.
+- `isNotDefined(value): boolean` — **deprecated** alias of `isUndefined`.
+- `toValidation(value, errors): Validation<T>` — builds `{ value, errors: undefined }` when `errors` is empty, else `{ value: undefined, errors }`.
 
-> `isDefined` treats **both** `null` and `undefined` as absent. This is why optional schemas skip validation for `null` too.
+> Only `undefined` is absent. `null` is defined and is passed to the validators, so an optional `string()` rejects `null`.
 
 ## The `key` parameter
 
@@ -81,11 +83,12 @@ Thrown by `parse()`. Inspect `e.errors` for the structured `ValidationError[]`.
 
 ## Absence semantics (applies to all schemas)
 
-| Schema mode | Value is `null`/`undefined` | Result                                             |
-| ----------- | --------------------------- | -------------------------------------------------- |
-| required    | yes                         | `"... is required"` error                          |
-| optional    | yes                         | skipped → `{ value: <absent>, errors: undefined }` |
-| either      | no                          | validators run normally                            |
+| Schema mode | Value       | Result                                              |
+| ----------- | ----------- | --------------------------------------------------- |
+| required    | `undefined` | `"... is required"` error                           |
+| optional    | `undefined` | skipped → `{ value: undefined, errors: undefined }` |
+| either      | `null`      | validators run normally (`null` is a value)         |
+| either      | anything    | validators run normally                             |
 
 ## Error accumulation (no short-circuit)
 
@@ -99,4 +102,4 @@ Practical implications:
 - To surface a single user-facing message, deduplicate or pick the first error per field/path in your presentation layer.
 - The `value` is `undefined` whenever `errors` is non-empty; you never get a partial value.
 
-This behavior is uniform across all schemas (`PrimitiveSchema.validate`, `ObjectSchema.validate`, `ArraySchema.validate`, etc. all collect every error from every validator they run).
+This behavior is uniform across all schemas (`PrimitiveSchema.validate`, `ObjectSchema.validate`, `ArraySchema.validate`, etc. all collect every error from every validator they run). The one exception: `ObjectSchema` does not validate its properties when the value is not an object, so `object({ ... }).validate(null)` returns only `"object" not type "object"`.

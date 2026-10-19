@@ -26,13 +26,13 @@ class UnionSchema<
 
 Inherited from `BaseSchema`: `validate`, `parse`, `jsonSchema`, `isRequired`, `toString`.
 
-> `UnionSchema` extends `BaseSchema` directly and has **no** `.custom()`, `.optional()`, or `.required()` methods. A union containing an optional member is also optional, so enclosing object schemas omit that field from their JSON Schema `required` list. To accept `null`, include a `NullSchema` member.
+> `UnionSchema` extends `BaseSchema` directly and has **no** `.custom()`, `.optional()`, or `.required()` methods. A union containing an optional member or an `undef()` member is also optional, so enclosing object schemas omit that field from their JSON Schema `required` list. To accept `null`, include a `nil()` member.
 
 ## Validation behavior
 
 1. An optional union accepts `undefined` immediately. Otherwise, the value is validated against each member schema.
 2. The **first** member that validates without errors wins — its `value` is returned.
-3. If no member passes, all members' errors are **flattened** and returned as the `errors` array.
+3. If no member passes, all members' errors are **flattened** and returned as the `errors` array. Members receive the union's `key`, so inside an object the errors name the field (e.g. `"id" is not type "number"`).
 4. A required union passes `undefined` to its members, which report their own validation errors if none accept it. `null` is always passed to the members and succeeds only if a member accepts it.
 
 The `create(property)` method returns a new `UnionSchema` with the same member schemas but a different property — used internally; not part of the public fluent API.

@@ -73,11 +73,11 @@ When in doubt, default to the factory. `uuid()` accepts an optional version (`"1
 ## Core mental model
 
 1. **Schemas are immutable.** Each constraint returns a _new_ instance. Don't mutate-then-read: `const s = string().notEmpty();`, not `s.notEmpty();` (and don't reach for `new StringSchema()` — use the factory).
-2. **Required by default.** `.optional()` allows `null`/`undefined` (both treated as "absent" — validation is skipped). `.required()` re-enforces it. Optionality flows into the inferred TS type.
+2. **Required by default.** `.optional()` allows `undefined` (the only "absent" value — validation is skipped). `null` is a value: it is validated like any other input and fails unless the schema accepts it (e.g. a `nil()` union member). `.required()` re-enforces presence. Optionality flows into the inferred TS type.
 3. **Two validation entry points:**
    - `schema.validate(input)` → `{ value, errors }`, never throws. Check `errors` for an array.
    - `schema.parse(input)` → returns `value`, throws `ValidationException` (with `.errors`) on failure.
-4. **Errors are `{ message: string }[]` and accumulate (no short-circuit).** Every base validator and every chained constraint runs and **all** errors are collected — a single invalid value can yield multiple errors (e.g. an absent required `string().notEmpty().minLength(3)` field produces `is required`, `is not type "string"`, and `is empty`/`length is less than 3`). Iterate the whole array; don't assume one error per field. See `references/schema.md`.
+4. **Errors are `{ message: string }[]` and accumulate (no short-circuit).** Every base validator and every chained constraint runs and **all** errors are collected — a single invalid value can yield multiple errors (e.g. an absent required `string().notEmpty().minLength(3)` field produces `is required`, `is not type "string"`, and `is empty`/`length is less than 3`). Iterate the whole array; don't assume one error per field. One exception: an `object()` given a non-object value (e.g. `null`) returns only its own type error and does not validate its properties. See `references/schema.md`.
 5. **`.custom()` exists only on `PrimitiveSchema` subclasses** (`StringSchema`, `NumberSchema`, `BooleanSchema`, `UrlSchema`, `UuidSchema`) — not on `ObjectSchema`, `ArraySchema`, `UnionSchema`, `EnumSchema`, `LiteralSchema`. See `references/schema.md`.
 
 ## Quick reference: what each schema does
@@ -125,7 +125,7 @@ Key points: `.optional()` widens to `T | undefined`; `.true()`/`.false()`/`liter
 - **Mutating instead of chaining** — constraint methods return new instances.
 - **Wrong class names** — `UrlSchema`/`UuidSchema`, not `URLSchema`/`UUIDSchema`.
 - **Expecting `.custom()` on `ObjectSchema`/`UnionSchema`** — only `PrimitiveSchema` subclasses have it.
-- **Treating `null` and `undefined` differently for optionality** — both are "absent"; optional schemas skip both.
+- **Expecting `.optional()` to accept `null`** — only `undefined` is absent. `string().optional().validate(null)` fails with `is not type "string"`. For nullable fields use `union([string(), nil()])`, or `undef().orNull()` for null-or-absent (see `references/usage-patterns.md`).
 - **Expecting `ObjectSchema` to reject unknown keys** — it ignores/drops them. For strictness, validate the keyset separately (see `references/usage-patterns.md`).
 - **Using `parse()` without try/catch** — it throws `ValidationException` on any failure.
 - **Reading `schema.infer` as a value.** `infer` is a phantom type member; `schema.infer` is `undefined` at runtime. Extract the type with `typeof schema.infer`, never the value. See `references/type-inference.md`.

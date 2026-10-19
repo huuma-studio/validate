@@ -67,4 +67,4 @@ maybe.validate(undefined); // { value: undefined, errors: undefined }
 
 ## JSON Schema
 
-`{ type: "string", format: "uuid", pattern: <regex source> }`. Unlike most schemas, `UuidSchema` **does** populate `pattern` (and `format: "uuid"`).
+`{ type: "string", format: "uuid", pattern: <regex source> }`. Unlike most schemas, `UuidSchema` **does** populate `pattern` (and `format: "uuid"`). The pattern spells out both cases (`[0-9A-Fa-f]`) instead of relying on a regex flag, so JSON Schema validators accept lowercase and uppercase UUIDs just like the runtime check.

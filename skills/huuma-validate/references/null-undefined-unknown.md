@@ -51,7 +51,7 @@ Validates that the value is `undefined` (or `null`/`undefined` with `.orNull()`)
 
 - Base check `_isUndefined`: `value === undefined`; failure → `"${key|"value"}" is not "undefined"`.
 - `.orNull()` swaps in `_isUndefinedOrNull`: `value == null` (covers both `null` and `undefined`); failure → `"${key|"value"}" is not "undefined" or "null"`.
-- No `.optional()`/`.required()` fluent methods. Required by default; required+absent is a _pass_ here (absent means `undefined`, which is what we want).
+- No `.optional()`/`.required()` fluent methods. Not required: `isRequired()` is `false` (like `unknown()`), since absent is exactly what it accepts. An `undef()` object property is left out of the JSON Schema `required` list, and a `union` with an `undef()` member is optional.
 
 ```typescript
 undef().validate(undefined); // { value: undefined, errors: undefined }
