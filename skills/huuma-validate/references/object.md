@@ -22,13 +22,13 @@ class ObjectSchema<T> extends BaseSchema<SchemaType<T>, ObjectJSONSchema<T>>
 
 ## Methods
 
-| Method | Signature | Behavior |
-|--------|-----------|----------|
-| `required()` | `(): ObjectSchema<RequiredType<T>>` | whole object required, narrows type |
-| `optional()` | `(): ObjectSchema<T \| undefined>` | whole object optional |
-| `validate(value, key?)` | `(): Validation<SchemaType<T>>` | validate object + each declared property |
-| `jsonSchema()` | `(): ObjectJSONSchema<T>` | `{ type:"object", properties, required }` |
-| `get schema` | `: T` | accessor for the property-schema map |
+| Method                  | Signature                           | Behavior                                  |
+| ----------------------- | ----------------------------------- | ----------------------------------------- |
+| `required()`            | `(): ObjectSchema<RequiredType<T>>` | whole object required, narrows type       |
+| `optional()`            | `(): ObjectSchema<T \| undefined>`  | whole object optional                     |
+| `validate(value, key?)` | `(): Validation<SchemaType<T>>`     | validate object + each declared property  |
+| `jsonSchema()`          | `(): ObjectJSONSchema<T>`           | `{ type:"object", properties, required }` |
+| `get schema`            | `: T`                               | accessor for the property-schema map      |
 
 Inherited: `parse`, `isRequired`, `toString`.
 

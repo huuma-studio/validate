@@ -1,7 +1,20 @@
-import { assertArrayIncludes } from "@std/assert/array-includes";
+import { assert, test } from "vite-plus/test";
 import { object } from "./object.ts";
 import { string } from "./string.ts";
-import { assertEquals } from "@std/assert/equals";
+import { number } from "./number.ts";
+import { union } from "./union.ts";
+
+test("Object JSON Schema: union fields accepting undefined are not required", () => {
+  const optionalName = union([string().optional(), number()]);
+  const requiredName = union([string(), number()]);
+  const schema = object({ name: optionalName, requiredName });
+
+  assert.deepEqual(schema.parse({ requiredName: "present" }), {
+    name: undefined,
+    requiredName: "present",
+  });
+  assert.deepEqual(schema.jsonSchema().required, ["requiredName"]);
+});
 
 const requiredMessage = { message: `"object" is required` };
 
@@ -15,41 +28,55 @@ const nameNotStringMessage = {
   message: '"name" is not type "string"',
 };
 
-Deno.test("Object Schema Validation: 'toString'", () => {
+test("Object Schema Validation: 'toString'", () => {
   const isObject = object({});
-  assertEquals(isObject.toString(), "object");
+  assert.deepEqual(isObject.toString(), "object");
 });
 
-Deno.test("Object Schema Validation: 'isObject'", () => {
+test("Object Schema Validation: 'isObject'", () => {
   const isObject = object({
     name: string(),
   })
     .optional()
     .required();
 
-  assertArrayIncludes(isObject.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(isObject.validate(null).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate(undefined).errors!, [
+    requiredMessage,
+  ]);
+  assert.includeDeepMembers(isObject.validate(null).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(isObject.validate("").errors!, [notObjectMessage]);
-  assertArrayIncludes(isObject.validate("Cargo").errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate("").errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate("Cargo").errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(isObject.validate(-1).errors!, [notObjectMessage]);
-  assertArrayIncludes(isObject.validate(0).errors!, [notObjectMessage]);
-  assertArrayIncludes(isObject.validate(1).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate(-1).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate(0).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate(1).errors!, [notObjectMessage]);
 
-  assertArrayIncludes(isObject.validate(NaN).errors!, [notObjectMessage]);
-  assertArrayIncludes(isObject.validate(Infinity).errors!, [notObjectMessage]);
-  assertArrayIncludes(isObject.validate(-Infinity).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate(NaN).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate(Infinity).errors!, [
+    notObjectMessage,
+  ]);
+  assert.includeDeepMembers(isObject.validate(-Infinity).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(isObject.validate(true).errors!, [notObjectMessage]);
-  assertArrayIncludes(isObject.validate(false).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate(true).errors!, [
+    notObjectMessage,
+  ]);
+  assert.includeDeepMembers(isObject.validate(false).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertEquals(isObject.validate({}).errors, [
+  assert.deepEqual(isObject.validate({}).errors, [
     nameRequiredMessage,
     nameNotStringMessage,
   ]);
 
-  assertEquals(
+  assert.deepEqual(
     isObject.validate({
       name: "Cargo",
       more: "Cargo",
@@ -57,7 +84,7 @@ Deno.test("Object Schema Validation: 'isObject'", () => {
     undefined,
   );
 
-  assertEquals(
+  assert.deepEqual(
     isObject.validate({
       name: "Cargo",
       more: "Cargo",
@@ -66,98 +93,130 @@ Deno.test("Object Schema Validation: 'isObject'", () => {
       name: "Cargo",
     },
   );
-  assertEquals(
+  assert.deepEqual(
     isObject.validate({
       name: "",
     }).errors,
     undefined,
   );
-  assertArrayIncludes(isObject.validate([]).errors!, [notObjectMessage]);
-  assertArrayIncludes(isObject.validate(() => {}).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate([]).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(isObject.validate(() => {}).errors!, [
+    notObjectMessage,
+  ]);
 });
 
-Deno.test("Object Schema Validation: 'required'", () => {
+test("Object Schema Validation: 'required'", () => {
   const required = object({
     name: string(),
   });
 
-  assertArrayIncludes(required.validate(undefined).errors!, [requiredMessage]);
-  assertArrayIncludes(required.validate(null).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate(undefined).errors!, [
+    requiredMessage,
+  ]);
+  assert.includeDeepMembers(required.validate(null).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(required.validate("").errors!, [notObjectMessage]);
-  assertArrayIncludes(required.validate("Cargo").errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate("").errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate("Cargo").errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(required.validate(-1).errors!, [notObjectMessage]);
-  assertArrayIncludes(required.validate(0).errors!, [notObjectMessage]);
-  assertArrayIncludes(required.validate(1).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate(-1).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate(0).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate(1).errors!, [notObjectMessage]);
 
-  assertArrayIncludes(required.validate(NaN).errors!, [notObjectMessage]);
-  assertArrayIncludes(required.validate(Infinity).errors!, [notObjectMessage]);
-  assertArrayIncludes(required.validate(-Infinity).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate(NaN).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate(Infinity).errors!, [
+    notObjectMessage,
+  ]);
+  assert.includeDeepMembers(required.validate(-Infinity).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(required.validate(true).errors!, [notObjectMessage]);
-  assertArrayIncludes(required.validate(false).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate(true).errors!, [
+    notObjectMessage,
+  ]);
+  assert.includeDeepMembers(required.validate(false).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertEquals(required.validate({}).errors, [
+  assert.deepEqual(required.validate({}).errors, [
     nameRequiredMessage,
     nameNotStringMessage,
   ]);
 
-  assertEquals(
+  assert.deepEqual(
     required.validate({
       name: "Cargo",
     }).errors,
     undefined,
   );
-  assertEquals(
+  assert.deepEqual(
     required.validate({
       name: "",
     }).errors,
     undefined,
   );
-  assertArrayIncludes(required.validate([]).errors!, [notObjectMessage]);
-  assertArrayIncludes(required.validate(() => {}).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate([]).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(required.validate(() => {}).errors!, [
+    notObjectMessage,
+  ]);
 });
 
-Deno.test("Object Schema Validation: 'optional'", () => {
+test("Object Schema Validation: 'optional'", () => {
   const optional = object({
     name: string(),
   }).optional();
 
-  assertEquals(optional.validate(undefined).errors, undefined);
-  assertArrayIncludes(optional.validate(null).errors!, [notObjectMessage]);
+  assert.deepEqual(optional.validate(undefined).errors, undefined);
+  assert.includeDeepMembers(optional.validate(null).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(optional.validate("").errors!, [notObjectMessage]);
-  assertArrayIncludes(optional.validate("Cargo").errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate("").errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate("Cargo").errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(optional.validate(-1).errors!, [notObjectMessage]);
-  assertArrayIncludes(optional.validate(0).errors!, [notObjectMessage]);
-  assertArrayIncludes(optional.validate(1).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate(-1).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate(0).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate(1).errors!, [notObjectMessage]);
 
-  assertArrayIncludes(optional.validate(NaN).errors!, [notObjectMessage]);
-  assertArrayIncludes(optional.validate(Infinity).errors!, [notObjectMessage]);
-  assertArrayIncludes(optional.validate(-Infinity).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate(NaN).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate(Infinity).errors!, [
+    notObjectMessage,
+  ]);
+  assert.includeDeepMembers(optional.validate(-Infinity).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertArrayIncludes(optional.validate(true).errors!, [notObjectMessage]);
-  assertArrayIncludes(optional.validate(false).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate(true).errors!, [
+    notObjectMessage,
+  ]);
+  assert.includeDeepMembers(optional.validate(false).errors!, [
+    notObjectMessage,
+  ]);
 
-  assertEquals(optional.validate({}).errors, [
+  assert.deepEqual(optional.validate({}).errors, [
     nameRequiredMessage,
     nameNotStringMessage,
   ]);
 
-  assertEquals(
+  assert.deepEqual(
     optional.validate({
       name: "Cargo",
     }).errors,
     undefined,
   );
-  assertEquals(
+  assert.deepEqual(
     optional.validate({
       name: "",
     }).errors,
     undefined,
   );
-  assertArrayIncludes(optional.validate([]).errors!, [notObjectMessage]);
-  assertArrayIncludes(optional.validate(() => {}).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate([]).errors!, [notObjectMessage]);
+  assert.includeDeepMembers(optional.validate(() => {}).errors!, [
+    notObjectMessage,
+  ]);
 });

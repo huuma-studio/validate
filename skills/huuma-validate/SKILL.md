@@ -5,30 +5,30 @@ description: Guides an agent on how to use the @huuma/validate runtime validatio
 
 # Using @huuma/validate
 
-`@huuma/validate` is a lightweight, zero-dependency, tree-shakable TypeScript validation library. Schemas are **class instances** built with a **chainable, immutable API**: every constraint method returns a *new* schema instance, so always chain on the returned value. It runs in browsers, Deno, Node.js, and any JS environment.
+`@huuma/validate` is a lightweight, zero-dependency, tree-shakable TypeScript validation library. Schemas are **class instances** built with a **chainable, immutable API**: every constraint method returns a _new_ schema instance, so always chain on the returned value. It runs in browsers, Deno, Node.js, and any JS environment.
 
 ## How to use this skill
 
 The instructions below are the orientation. **For exact signatures, edge cases, error messages, and per-validator examples, read the matching reference file under `references/`** (paths are relative to this skill directory). Load the relevant reference before writing or debugging code for that schema — they contain the authoritative detail.
 
-| When working with… | Read |
-|---|---|
-| Core types, `BaseSchema`, `PrimitiveSchema`, `Validation`, `ValidationException`, absence semantics | `references/schema.md` |
-| `StringSchema` | `references/string.md` |
-| `NumberSchema` | `references/number.md` |
-| `BooleanSchema` | `references/boolean.md` |
-| `ArraySchema` | `references/array.md` |
-| `ObjectSchema` (the workhorse for nesting) | `references/object.md` |
-| `EnumSchema` | `references/enum.md` |
-| `LiteralSchema` | `references/literal.md` |
-| `UrlSchema` | `references/url.md` |
-| `UuidSchema` | `references/uuid.md` |
-| `UnionSchema` | `references/union.md` |
-| `NullSchema`, `UndefinedSchema`, `UnknownSchema` | `references/null-undefined-unknown.md` |
-| Huuma/Route middleware (`validateBody`, `validateSearch`) | `references/middleware.md` |
-| `.jsonSchema()` output & keyword coverage | `references/json-schema.md` |
-| Composition recipes, optional/nullable/strict patterns, boundary helpers | `references/usage-patterns.md` |
-| Deriving TypeScript types from a schema (`typeof schema.infer`) | `references/type-inference.md` |
+| When working with…                                                                                  | Read                                   |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Core types, `BaseSchema`, `PrimitiveSchema`, `Validation`, `ValidationException`, absence semantics | `references/schema.md`                 |
+| `StringSchema`                                                                                      | `references/string.md`                 |
+| `NumberSchema`                                                                                      | `references/number.md`                 |
+| `BooleanSchema`                                                                                     | `references/boolean.md`                |
+| `ArraySchema`                                                                                       | `references/array.md`                  |
+| `ObjectSchema` (the workhorse for nesting)                                                          | `references/object.md`                 |
+| `EnumSchema`                                                                                        | `references/enum.md`                   |
+| `LiteralSchema`                                                                                     | `references/literal.md`                |
+| `UrlSchema`                                                                                         | `references/url.md`                    |
+| `UuidSchema`                                                                                        | `references/uuid.md`                   |
+| `UnionSchema`                                                                                       | `references/union.md`                  |
+| `NullSchema`, `UndefinedSchema`, `UnknownSchema`                                                    | `references/null-undefined-unknown.md` |
+| Huuma/Route middleware (`validateBody`, `validateSearch`)                                           | `references/middleware.md`             |
+| `.jsonSchema()` output & keyword coverage                                                           | `references/json-schema.md`            |
+| Composition recipes, optional/nullable/strict patterns, boundary helpers                            | `references/usage-patterns.md`         |
+| Deriving TypeScript types from a schema (`typeof schema.infer`)                                     | `references/type-inference.md`         |
 
 When unsure of a method's behavior, the corresponding `references/*.md` and the source `src/<type>.ts` are the sources of truth — the project README lags behind the source.
 
@@ -52,27 +52,27 @@ For minimum bundle size, import individual modules (each validator is fully inde
 
 Every schema class has a lowercase **factory function** exported from the main entrypoint. **Use the factory functions — not `new *Schema(...)` constructors.** This is the strongly encouraged, idiomatic API. Constructors are an implementation detail and should be avoided in application code.
 
-| Schema | Factory | Example |
-|---|---|---|
-| `StringSchema` | `string()` | `string().notEmpty().minLength(3)` |
-| `NumberSchema` | `number()` | `number().min(18)` |
-| `BooleanSchema` | `boolean()` | `boolean().true()` |
-| `ArraySchema` | `array(schema)` | `array(string().notEmpty())` |
-| `ObjectSchema` | `object({ ... })` | `object({ name: string() })` |
-| `EnumSchema` | `enums([...])` | `enums(["admin", "user"])` |
-| `LiteralSchema` | `literal(value)` | `literal("active")` |
-| `UrlSchema` | `url()` | `url().http()` |
-| `UuidSchema` | `uuid(version?)` | `uuid("4")`, `uuid()` |
-| `UnionSchema` | `union([...])` | `union([string(), number()])` |
-| `NullSchema` | `nil()` | `nil()` |
-| `UndefinedSchema` | `undef()` | `undef()` |
-| `UnknownSchema` | `unknown()` | `unknown()` |
+| Schema            | Factory           | Example                            |
+| ----------------- | ----------------- | ---------------------------------- |
+| `StringSchema`    | `string()`        | `string().notEmpty().minLength(3)` |
+| `NumberSchema`    | `number()`        | `number().min(18)`                 |
+| `BooleanSchema`   | `boolean()`       | `boolean().true()`                 |
+| `ArraySchema`     | `array(schema)`   | `array(string().notEmpty())`       |
+| `ObjectSchema`    | `object({ ... })` | `object({ name: string() })`       |
+| `EnumSchema`      | `enums([...])`    | `enums(["admin", "user"])`         |
+| `LiteralSchema`   | `literal(value)`  | `literal("active")`                |
+| `UrlSchema`       | `url()`           | `url().http()`                     |
+| `UuidSchema`      | `uuid(version?)`  | `uuid("4")`, `uuid()`              |
+| `UnionSchema`     | `union([...])`    | `union([string(), number()])`      |
+| `NullSchema`      | `nil()`           | `nil()`                            |
+| `UndefinedSchema` | `undef()`         | `undef()`                          |
+| `UnknownSchema`   | `unknown()`       | `unknown()`                        |
 
 When in doubt, default to the factory. `uuid()` accepts an optional version (`"1"`, `"4"`, or omitted/`"all"`) so you never need the constructor — use `uuid("4")` instead of `new UuidSchema("4")`.
 
 ## Core mental model
 
-1. **Schemas are immutable.** Each constraint returns a *new* instance. Don't mutate-then-read: `const s = string().notEmpty();`, not `s.notEmpty();` (and don't reach for `new StringSchema()` — use the factory).
+1. **Schemas are immutable.** Each constraint returns a _new_ instance. Don't mutate-then-read: `const s = string().notEmpty();`, not `s.notEmpty();` (and don't reach for `new StringSchema()` — use the factory).
 2. **Required by default.** `.optional()` allows `null`/`undefined` (both treated as "absent" — validation is skipped). `.required()` re-enforces it. Optionality flows into the inferred TS type.
 3. **Two validation entry points:**
    - `schema.validate(input)` → `{ value, errors }`, never throws. Check `errors` for an array.
@@ -117,7 +117,7 @@ const { value } = userSchema.validate(input); // value: User
 const user = userSchema.parse(input);          // user: User (throws on invalid)
 ```
 
-Key points: `.optional()` widens to `T | undefined`; `.true()`/`.false()`/`literal()`/`enums()` narrow to literals/unions; `infer` is a phantom *type* only (don't read it as a value). Full detail, alternative extraction forms, and gotchas in `references/type-inference.md`.
+Key points: `.optional()` widens to `T | undefined`; `.true()`/`.false()`/`literal()`/`enums()` narrow to literals/unions; `infer` is a phantom _type_ only (don't read it as a value). Full detail, alternative extraction forms, and gotchas in `references/type-inference.md`.
 
 ## Common mistakes to avoid
 
@@ -162,6 +162,6 @@ Always defer to the source when a reference file is ambiguous:
 - `src/schema.ts` — base classes, types, `ValidationException`.
 - `src/<type>.ts` — each validator's implementation.
 - `src/middleware.ts` — `validateBody`, `validateSearch`.
-- `src/mod.ts` / `deno.json` — exports and subpath import map.
+- `src/mod.ts` / `jsr.json` — exports and subpath import map.
 
 Read the relevant `src/<type>.ts` alongside the `references/<type>.md` if a method's exact behavior is in question.

@@ -12,17 +12,17 @@ The JSON Schema is **cached at construction time** — it reflects the schema as
 
 ## Keyword coverage
 
-| Keyword | Produced by |
-|---------|--------------|
-| `type` | all schemas |
-| `properties` | `ObjectSchema` (map of property jsonSchemas) |
-| `required` | `ObjectSchema` (keys whose schema `isRequired()`) |
-| `items` | `ArraySchema` (single element schema) |
-| `enum` | `EnumSchema` |
-| `oneOf` | `UnionSchema` (member jsonSchemas) |
-| `const` | `LiteralSchema` |
-| `format` | `UrlSchema` (`"uri"`), `UuidSchema` (`"uuid"`) |
-| `pattern` | `UuidSchema` (regex source) |
+| Keyword      | Produced by                                       |
+| ------------ | ------------------------------------------------- |
+| `type`       | all schemas                                       |
+| `properties` | `ObjectSchema` (map of property jsonSchemas)      |
+| `required`   | `ObjectSchema` (keys whose schema `isRequired()`) |
+| `items`      | `ArraySchema` (single element schema)             |
+| `enum`       | `EnumSchema`                                      |
+| `anyOf`      | `UnionSchema` (member jsonSchemas)                |
+| `const`      | `LiteralSchema`                                   |
+| `format`     | `UrlSchema` (`"uri"`), `UuidSchema` (`"uuid"`)    |
+| `pattern`    | `UuidSchema` (regex source)                       |
 
 Constraints like `min`/`max`/`positive`/`negative`/`notEmpty`/`minLength`/`regex`/`http`/`protocol` are **runtime-only** and do **not** populate `minimum`/`maximum`/`pattern`/etc. in the JSON Schema. If you need full-fidelity JSON Schema, post-process or augment the output.
 
@@ -59,4 +59,4 @@ The `Schema<T, J>` interface's second parameter `J` is the JSON Schema type. Use
 
 ## Composition
 
-Nesting composes correctly: `ObjectSchema` calls each property's `.jsonSchema()`; `ArraySchema` calls the element's; `UnionSchema` maps `oneOf` from members. So a deeply nested schema yields a deeply nested JSON Schema in one call.
+Nesting composes correctly: `ObjectSchema` calls each property's `.jsonSchema()`; `ArraySchema` calls the element's; `UnionSchema` maps `anyOf` from members. So a deeply nested schema yields a deeply nested JSON Schema in one call.

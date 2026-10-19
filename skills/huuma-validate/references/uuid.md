@@ -16,8 +16,6 @@ const v4 = uuid("4");       // ✅ UUID v4 via factory (no constructor needed)
 const v1 = uuid("1");       // ✅ UUID v1 via factory
 ```
 
-> The export is `UuidSchema`, **not** `UUIDSchema`. README is wrong.
-
 `uuid()` / `uuid("all")` → any-version UUID, inferred `string`, required. `uuid("1")`/`uuid("4")` → that version only. `.optional()` → `string | undefined`.
 
 ## Inference
@@ -37,7 +35,7 @@ Inherited from `PrimitiveSchema`: `custom`, `optional`, `required`, `validate`, 
 
 `_isUuid(version)` tests the value against a version-specific regex:
 
-- `"all"`: `/^[0-9A-Z]{8}(-[0-9A-Z]{4}){3}-[0-9A-Z]{12}$/i` — any hex UUID shape (version nibble not checked).
+- `"all"`: `/^[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$/i` — any hex UUID shape (version nibble not checked).
 - `"1"`: third group must start with `1`.
 - `"4"`: third group must start with `4`, fourth group must start with `8`, `9`, `A`, or `B`.
 

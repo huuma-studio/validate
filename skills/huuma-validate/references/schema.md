@@ -19,6 +19,7 @@ interface Schema<T, J extends JSONSchema = JSONSchema> {
   infer: T;            // phantom type used for inference
   jsonSchema(): J;
   isRequired(): boolean;
+  toString(): string;
 }
 
 interface Property       { validators: Validator[]; isRequired: boolean; }
@@ -76,15 +77,15 @@ Thrown by `parse()`. Inspect `e.errors` for the structured `ValidationError[]`.
 
 ## JSON Schema types
 
-`JSONSchemaTypes = "string" | "number" | "object" | "array" | "boolean" | "null"`. The `JSONSchema` shape supports: `type`, `properties`, `required`, `items`, `enum`, `oneOf`, `const`, `format`, `pattern`.
+`JSONSchemaTypes = "string" | "number" | "object" | "array" | "boolean" | "null"`. The `JSONSchema` shape supports: `type`, `properties`, `required`, `items`, `enum`, `anyOf`, `oneOf`, `const`, `format`, `pattern`.
 
 ## Absence semantics (applies to all schemas)
 
-| Schema mode | Value is `null`/`undefined`      | Result          |
-|-------------|----------------------------------|-----------------|
-| required    | yes                              | `"... is required"` error |
-| optional    | yes                              | skipped → `{ value: <absent>, errors: undefined }` |
-| either      | no                               | validators run normally |
+| Schema mode | Value is `null`/`undefined` | Result                                             |
+| ----------- | --------------------------- | -------------------------------------------------- |
+| required    | yes                         | `"... is required"` error                          |
+| optional    | yes                         | skipped → `{ value: <absent>, errors: undefined }` |
+| either      | no                          | validators run normally                            |
 
 ## Error accumulation (no short-circuit)
 

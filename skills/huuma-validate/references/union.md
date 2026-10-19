@@ -18,7 +18,7 @@ import { UnionSchema } from "jsr:@huuma/validate/union"; // ⚠️ constructor �
 
 ```typescript
 class UnionSchema<
-  T extends ReadonlyArray<T[number] extends Schema<unknown> ? T[number] : never>
+  T extends ReadonlyArray<Schema<unknown>>
 > extends BaseSchema<SchemaType<T[number]>, UnionJSONSchema<T>>
 ```
 
@@ -26,14 +26,14 @@ class UnionSchema<
 
 Inherited from `BaseSchema`: `validate`, `parse`, `jsonSchema`, `isRequired`, `toString`.
 
-> `UnionSchema` extends `BaseSchema` directly and has **no** `.custom()`, `.optional()`, or `.required()` methods. It is always treated as **required** at construction; to make a union optional, either include an `UndefinedSchema`/`NullSchema` member, or wrap it in an `ObjectSchema` field with optionality — there is no built-in `.optional()` on `UnionSchema` itself.
+> `UnionSchema` extends `BaseSchema` directly and has **no** `.custom()`, `.optional()`, or `.required()` methods. A union containing an optional member is also optional, so enclosing object schemas omit that field from their JSON Schema `required` list. To accept `null`, include a `NullSchema` member.
 
 ## Validation behavior
 
-1. If required (always, since there's no `.optional()`), the value is validated against each member schema.
+1. An optional union accepts `undefined` immediately. Otherwise, the value is validated against each member schema.
 2. The **first** member that validates without errors wins — its `value` is returned.
 3. If no member passes, all members' errors are **flattened** and returned as the `errors` array.
-4. If the value is absent (`undefined`/`null`) and required, every member's required check fires, so the flattened errors will include `"${key}" is required` from each member — typically redundant but signal "no member accepted it".
+4. A required union passes `undefined` to its members, which report their own validation errors if none accept it. `null` is always passed to the members and succeeds only if a member accepts it.
 
 The `create(property)` method returns a new `UnionSchema` with the same member schemas but a different property — used internally; not part of the public fluent API.
 
@@ -51,12 +51,12 @@ const status = union([literal("active"), literal("invited")]);
 status.validate("active");  // { value: "active", errors: undefined }
 status.validate("pending"); // both fail → flattened errors
 
-// Optional-ish union (no .optional() on UnionSchema):
+// An optional member makes the union field optional:
 const schema = object({
-  id: union([uuid(), number()]), // uuid() factory for any-version
+  id: union([uuid().optional(), number()]),
 });
 ```
 
 ## JSON Schema
 
-`{ oneOf: [...each member's jsonSchema()] }`. Mirrors JSON Schema's `oneOf` keyword (though the runtime semantics are "any", not "exactly one").
+`{ anyOf: [...each member's jsonSchema()] }`. Accepts values matching any member, including values that match multiple members, consistently with runtime validation.

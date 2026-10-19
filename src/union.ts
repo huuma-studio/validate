@@ -12,15 +12,11 @@ import {
 type SchemaType<S> = S extends Schema<infer T> ? T : never;
 
 export type UnionJSONSchema<T extends ReadonlyArray<Schema<unknown>>> = {
-  oneOf: T extends Array<Schema<infer U>>
-    ? Array<ReturnType<T[number]["jsonSchema"]>>
-    : never;
+  anyOf: Array<ReturnType<T[number]["jsonSchema"]>>;
 };
 
 export class UnionSchema<
-  T extends ReadonlyArray<
-    T[number] extends Schema<unknown> ? T[number] : never
-  >,
+  T extends ReadonlyArray<Schema<unknown>>,
 > extends BaseSchema<SchemaType<T[number]>, UnionJSONSchema<T>> {
   #schemas: T;
   #property: BaseProperty;
@@ -31,24 +27,19 @@ export class UnionSchema<
   ) {
     const type = `union:${schemas.map((s) => s?.toString()).join(",")}`;
     const jsonSchema: UnionJSONSchema<T> = {
-      oneOf: schemas.map((s) => {
+      anyOf: schemas.map((s) => {
         if (s instanceof BaseSchema) {
           return s.jsonSchema();
         }
         throw Error("Schema not supported");
-        // deno-lint-ignore no-explicit-any
-      }) as any,
+      }) as UnionJSONSchema<T>["anyOf"],
     };
     const property: BaseProperty = {
-      isRequired,
+      isRequired: isRequired && schemas.every((schema) => schema.isRequired()),
       validators: [...validators],
       baseValidators: [required(type)],
     };
-    super(
-      type,
-      jsonSchema,
-      property,
-    );
+    super(type, jsonSchema, property);
     this.#schemas = schemas;
     this.#property = property;
   }
@@ -78,14 +69,14 @@ export class UnionSchema<
       (!this.#property.isRequired && failedValidations.length === 0)
     ) {
       return {
-        value: <SchemaType<T[number]>> passedValidations.shift()?.value,
+        value: <SchemaType<T[number]>>passedValidations.shift()?.value,
         errors: undefined,
       };
     }
 
     return {
       value: undefined,
-      errors: <ValidationError[]> validations
+      errors: <ValidationError[]>validations
         .filter((v) => v.errors?.length)
         .map((e) => e.errors)
         .flat(),
@@ -93,10 +84,8 @@ export class UnionSchema<
   }
 }
 
-export function union<
-  T extends ReadonlyArray<
-    T[number] extends Schema<unknown> ? T[number] : never
-  >,
->(schemas: T): UnionSchema<T> {
+export function union<T extends ReadonlyArray<Schema<unknown>>>(
+  schemas: T,
+): UnionSchema<T> {
   return new UnionSchema(schemas);
 }

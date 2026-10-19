@@ -185,12 +185,15 @@ function _mismatch(
 }
 
 function _isRegex(regex: RegExp): Validator {
+  const pattern = new RegExp(regex.source, regex.flags);
   return (value: unknown, key?: string) => {
-    if (typeof value === "string" && regex.test(<string>value)) {
+    // Global and sticky patterns must start each validation at the beginning.
+    pattern.lastIndex = 0;
+    if (typeof value === "string" && pattern.test(value)) {
       return;
     }
     return {
-      message: `"${key || "string"}" does not match regex "${regex}"`,
+      message: `"${key || "string"}" does not match regex "${pattern}"`,
     };
   };
 }

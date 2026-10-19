@@ -47,10 +47,7 @@ export function nil(): NullSchema {
   return new NullSchema();
 }
 
-function _isNull(
-  value: unknown,
-  key?: string,
-): ValidationError | undefined {
+function _isNull(value: unknown, key?: string): ValidationError | undefined {
   if (value === null) {
     return;
   }

@@ -11,7 +11,7 @@ import {
 
 export type ArrayJSONSchema<T extends Schema<unknown> | undefined> = {
   type: "array";
-  items: T extends BaseSchema<infer U> ? ReturnType<T["jsonSchema"]> : never;
+  items: T extends BaseSchema<unknown> ? ReturnType<T["jsonSchema"]> : never;
 };
 
 export class ArraySchema<
@@ -33,7 +33,7 @@ export class ArraySchema<
     const jsonSchema: ArrayJSONSchema<T> = {
       type,
       // deno-lint-ignore no-explicit-any
-      items: <any> schema.jsonSchema(),
+      items: <any>schema.jsonSchema(),
     };
 
     const property: BaseProperty = {
@@ -83,16 +83,11 @@ export class ArraySchema<
         }
       }
       if (Array.isArray(toValidate)) {
-        for (
-          const [index, entry] of <IterableIterator<[number, unknown]>> (
-            toValidate.entries()
-          )
-        ) {
-          const { value: validatedEntry, errors: validationErrors } = this
-            .schema.validate(
-              entry,
-              `array index ${index.toString()}`,
-            );
+        for (const [index, entry] of <IterableIterator<[number, unknown]>>(
+          toValidate.entries()
+        )) {
+          const { value: validatedEntry, errors: validationErrors } =
+            this.schema.validate(entry, `array index ${index.toString()}`);
           if (validationErrors?.length) {
             errors.push(...validationErrors);
           } else {
@@ -110,8 +105,9 @@ export class ArraySchema<
     }
 
     return {
-      value: <T extends Schema<unknown> ? T["infer"][]
-        : undefined> validatedItems,
+      value: <T extends Schema<unknown> ? T["infer"][] : undefined>(
+        validatedItems
+      ),
       errors: undefined,
     };
   }

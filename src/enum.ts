@@ -16,10 +16,7 @@ export type EnumJSONSchema<T> = {
 
 export class EnumSchema<
   T extends string | number | undefined,
-> extends BaseSchema<
-  T,
-  EnumJSONSchema<T>
-> {
+> extends BaseSchema<T, EnumJSONSchema<T>> {
   #enums: T[];
   #property: BaseProperty;
 
@@ -30,7 +27,7 @@ export class EnumSchema<
     const type = `enum:${enums.join(",")}`;
     const jsonSchema: EnumJSONSchema<T> = {
       enum: enums.map((e) => {
-        return <T> e;
+        return <T>e;
       }) as T extends undefined ? never : T[],
     };
 
@@ -63,10 +60,7 @@ export class EnumSchema<
     });
   }
 
-  override validate(
-    toValidate: unknown,
-    key?: string,
-  ): Validation<T> {
+  override validate(toValidate: unknown, key?: string): Validation<T> {
     const errors: ValidationError[] = [];
 
     if (this.#property.isRequired || isDefined(toValidate)) {
@@ -105,12 +99,17 @@ function _isEnum(values: unknown[]): Validator {
       return;
     }
 
+    // Objects may have missing, non-callable, or throwing coercion methods.
+    const valueLabel =
+      (typeof value === "object" && value !== null) ||
+      typeof value === "function"
+        ? typeof value
+        : String(value);
+
     return {
-      message: `"${key || "enum"}": ("${value}") is not one of ${
-        values
-          .map((value) => `"${value}"`)
-          .join(", ")
-      }`,
+      message: `"${key || "enum"}": ("${valueLabel}") is not one of ${values
+        .map((value) => `"${String(value)}"`)
+        .join(", ")}`,
     };
   };
 }

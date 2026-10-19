@@ -22,16 +22,16 @@ class NumberSchema<T = number> extends PrimitiveSchema<T, NumberSchema<RequiredT
 
 ## Methods
 
-| Method | Signature | Behavior | Error message |
-|--------|-----------|----------|---------------|
-| `positive()` | `(): this` | value `> 0` | `"${key\|"number"}" is not positive` |
-| `negative()` | `(): this` | value `< 0` | `"${key\|"number"}" is not negative` |
-| `min(n)` | `(like: number): this` | value `>= n` | `"${key\|"number"}" is smaller than ${n}` |
-| `max(n)` | `(like: number): this` | value `<= n` | `"${key\|"number"}" is bigger than ${n}` |
-| `equals(to)` | `(to: number): this` | value `=== to` | `"${key\|"number"}" is not equals ${to}` |
-| `custom(v)` | `(validator: Validator): this` | your check | your message |
-| `optional()` | `(): NumberSchema<number\|undefined>` | — | — |
-| `required()` | `(): NumberSchema<number>` | — | — |
+| Method       | Signature                             | Behavior       | Error message                             |
+| ------------ | ------------------------------------- | -------------- | ----------------------------------------- |
+| `positive()` | `(): this`                            | value `> 0`    | `"${key\|"number"}" is not positive`      |
+| `negative()` | `(): this`                            | value `< 0`    | `"${key\|"number"}" is not negative`      |
+| `min(n)`     | `(like: number): this`                | value `>= n`   | `"${key\|"number"}" is smaller than ${n}` |
+| `max(n)`     | `(like: number): this`                | value `<= n`   | `"${key\|"number"}" is bigger than ${n}`  |
+| `equals(to)` | `(to: number): this`                  | value `=== to` | `"${key\|"number"}" is not equals ${to}`  |
+| `custom(v)`  | `(validator: Validator): this`        | your check     | your message                              |
+| `optional()` | `(): NumberSchema<number\|undefined>` | —              | —                                         |
+| `required()` | `(): NumberSchema<number>`            | —              | —                                         |
 
 ## Base validation
 

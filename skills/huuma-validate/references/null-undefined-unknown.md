@@ -44,14 +44,14 @@ class UndefinedSchema<T extends null | undefined = undefined> extends BaseSchema
 
 Validates that the value is `undefined` (or `null`/`undefined` with `.orNull()`).
 
-| Method | Signature | Behavior |
-|--------|-----------|----------|
-| `orNull()` | `(): UndefinedSchema<null \| undefined>` | accept `null` **or** `undefined` |
-| `validate(value, key?)` | `(): Validation<T>` | run base validator |
+| Method                  | Signature                                | Behavior                         |
+| ----------------------- | ---------------------------------------- | -------------------------------- |
+| `orNull()`              | `(): UndefinedSchema<null \| undefined>` | accept `null` **or** `undefined` |
+| `validate(value, key?)` | `(): Validation<T>`                      | run base validator               |
 
 - Base check `_isUndefined`: `value === undefined`; failure → `"${key|"value"}" is not "undefined"`.
 - `.orNull()` swaps in `_isUndefinedOrNull`: `value == null` (covers both `null` and `undefined`); failure → `"${key|"value"}" is not "undefined" or "null"`.
-- No `.optional()`/`.required()` fluent methods. Required by default; required+absent is a *pass* here (absent means `undefined`, which is what we want).
+- No `.optional()`/`.required()` fluent methods. Required by default; required+absent is a _pass_ here (absent means `undefined`, which is what we want).
 
 ```typescript
 undef().validate(undefined); // { value: undefined, errors: undefined }

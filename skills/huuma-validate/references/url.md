@@ -12,8 +12,6 @@ import { url } from "jsr:@huuma/validate/url";       // ✅ deep import (best tr
 import { UrlSchema } from "jsr:@huuma/validate/url"; // ⚠️ constructor — avoid in app code
 ```
 
-> The export is `UrlSchema` (lowercase `rl`), **not** `URLSchema`. The README's `URLSchema` is wrong.
-
 `url()` returns a `UrlSchema` (inferred `string`, required). `.optional()` → `string | undefined`.
 
 ## Inference
@@ -24,17 +22,17 @@ class UrlSchema<T = string> extends PrimitiveSchema<T, UrlSchema<RequiredType<T>
 
 ## Methods
 
-| Method | Signature | Behavior | Error message |
-|--------|-----------|----------|---------------|
-| `http(secure?)` | `(secure = true): UrlSchema<T>` | `true` → `https:` only; `false` → `http:` or `https:` | `"${key\|"url"}" is not of protocol type "https:"` (or `"http:" or "https:"`) |
-| `protocol(p)` | `(protocol: string): UrlSchema<T>` | require exact `protocol` (e.g. `"ssh:"`, include the colon) | `"${key\|"url"}" is not of protocol type "ssh:"` |
-| `custom(v)` | `(validator: Validator): this` | your check | your message |
-| `optional()` | `(): UrlSchema<string\|undefined>` | — | — |
-| `required()` | `(): UrlSchema<string>` | — | — |
+| Method          | Signature                          | Behavior                                                    | Error message                                                                 |
+| --------------- | ---------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `http(secure?)` | `(secure = true): UrlSchema<T>`    | `true` → `https:` only; `false` → `http:` or `https:`       | `"${key\|"url"}" is not of protocol type "https:"` (or `"http:" or "https:"`) |
+| `protocol(p)`   | `(protocol: string): UrlSchema<T>` | require exact `protocol` (e.g. `"ssh:"`, include the colon) | `"${key\|"url"}" is not of protocol type "ssh:"`                              |
+| `custom(v)`     | `(validator: Validator): this`     | your check                                                  | your message                                                                  |
+| `optional()`    | `(): UrlSchema<string\|undefined>` | —                                                           | —                                                                             |
+| `required()`    | `(): UrlSchema<string>`            | —                                                           | —                                                                             |
 
 ## Base validation
 
-`_isUrl` parses with `new URL(value)` inside a try/catch. If parsing throws (invalid URL) → `"${key|"url"}" is not a valid "URL"`. Protocol strings compared use the `URL.protocol` property, which **includes the trailing colon** (e.g. `"https:"`, `"ssh:"`).
+`_isUrl` rejects non-string values before parsing with `new URL(value)` inside a try/catch. A non-string value or a parsing failure produces `"${key|"url"}" is not a valid "URL"`. Protocol strings compared use the `URL.protocol` property, which **includes the trailing colon** (e.g. `"https:"`, `"ssh:"`).
 
 ## Examples
 

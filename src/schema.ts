@@ -28,7 +28,8 @@ export interface BaseProperty extends Property {
 }
 
 export type OptionalType<T> = T extends undefined ? T : T | undefined;
-export type RequiredType<T> = T extends undefined ? never
+export type RequiredType<T> = T extends undefined
+  ? never
   : Exclude<T, undefined>;
 
 export interface Schema<T, J extends JSONSchema = JSONSchema> {
@@ -36,10 +37,13 @@ export interface Schema<T, J extends JSONSchema = JSONSchema> {
   infer: T;
   jsonSchema(): J;
   isRequired(): boolean;
+  toString(): string;
 }
 
-export abstract class BaseSchema<T, J extends JSONSchema = JSONSchema>
-  implements Schema<T, J> {
+export abstract class BaseSchema<
+  T,
+  J extends JSONSchema = JSONSchema,
+> implements Schema<T, J> {
   readonly #jsonSchema: JSONSchema;
   readonly #type: string;
   readonly #property: BaseProperty;
@@ -77,7 +81,7 @@ export abstract class BaseSchema<T, J extends JSONSchema = JSONSchema>
   }
 
   jsonSchema(): J {
-    return <J> this.#jsonSchema;
+    return <J>this.#jsonSchema;
   }
 
   isRequired(): boolean {
@@ -115,7 +119,7 @@ export abstract class PrimitiveSchema<
       validators: [...this.#property.validators],
       isRequired: true,
     };
-    return <R> (<unknown> this.create(property));
+    return <R>(<unknown>this.create(property));
   }
 
   optional(): O {
@@ -123,7 +127,7 @@ export abstract class PrimitiveSchema<
       validators: [...this.#property.validators],
       isRequired: false,
     };
-    return <O> (<unknown> this.create(property));
+    return <O>(<unknown>this.create(property));
   }
 
   validate(value: unknown, key?: string): Validation<T> {
@@ -148,7 +152,7 @@ export abstract class PrimitiveSchema<
     }
 
     return {
-      value: <T> value,
+      value: <T>value,
       errors: undefined,
     };
   }
@@ -207,6 +211,7 @@ export type JSONSchema = {
   required?: string[];
   items?: JSONSchema | JSONSchema[];
   enum?: (string | number)[];
+  anyOf?: JSONSchema[];
   oneOf?: JSONSchema[];
   const?: unknown;
   format?: string;

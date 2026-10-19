@@ -168,28 +168,28 @@ const schema = new ObjectSchema({
 ### URL Validation
 
 ```typescript
-import { URLSchema } from "jsr:@huuma/validate";
+import { UrlSchema } from "jsr:@huuma/validate";
 
-const schema = new URLSchema()
+const schema = new UrlSchema()
   .http(true)  // Must be HTTPS (pass false to allow HTTP or HTTPS)
   .optional();
 
 // Or validate specific protocols
-const sshSchema = new URLSchema()
+const sshSchema = new UrlSchema()
   .protocol("ssh:");
 ```
 
 ### UUID Validation
 
 ```typescript
-import { UUIDSchema } from "jsr:@huuma/validate";
+import { UuidSchema } from "jsr:@huuma/validate";
 
 // Any UUID version
-const schema = new UUIDSchema();
+const schema = new UuidSchema();
 
 // Specific UUID version
-const uuidV4Schema = new UUIDSchema("4");  // Only UUID v4
-const uuidV1Schema = new UUIDSchema("1");  // Only UUID v1
+const uuidV4Schema = new UuidSchema("4");  // Only UUID v4
+const uuidV1Schema = new UuidSchema("1");  // Only UUID v1
 ```
 
 ### Enum Validation
@@ -293,6 +293,25 @@ Validation errors have a consistent format:
   { message: '"age" is smaller than 18' }
 ]
 ```
+
+## Development
+
+Use Node.js 24 and pnpm. The development tools are provided by
+[Vite+](https://viteplus.dev/guide/).
+
+```bash
+pnpm install
+pnpm check          # Formatting, linting, and TypeScript checks
+pnpm test           # Run the test suite
+pnpm test:watch     # Run tests in watch mode
+pnpm fmt            # Format the project
+pnpm publish:check  # Validate the JSR package without publishing
+```
+
+JSR package metadata, exports, and dependency imports live in `jsr.json`.
+Publishing continues through JSR; the publishing CLI manages its own runtime.
+CI runs checks, tests, and a publishing dry run before publishing changes merged
+to `main`.
 
 ## License
 

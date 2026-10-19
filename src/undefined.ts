@@ -10,8 +10,9 @@ interface UndefinedProperty extends Property {
   allowNull?: boolean;
 }
 
-export class UndefinedSchema<T extends null | undefined = undefined>
-  extends BaseSchema<T> {
+export class UndefinedSchema<
+  T extends null | undefined = undefined,
+> extends BaseSchema<T> {
   #property: BaseProperty;
   constructor(
     { isRequired, validators, allowNull }: UndefinedProperty = {

@@ -17,10 +17,7 @@ export type LiteralJSONSchema<T> = {
 
 export class LiteralSchema<
   T extends string | number | undefined,
-> extends BaseSchema<
-  T,
-  LiteralJSONSchema<T>
-> {
+> extends BaseSchema<T, LiteralJSONSchema<T>> {
   #type: T;
   #property: BaseProperty;
 
@@ -30,17 +27,13 @@ export class LiteralSchema<
   ) {
     const type = `literal:${value}`;
     const typeOfValue = typeof value;
-    if (
-      typeOfValue !== "string" &&
-      typeOfValue !== "number"
-    ) {
+    if (typeOfValue !== "string" && typeOfValue !== "number") {
       throw new Error(
         `LiteralSchema cannot be created with type of ${typeOfValue}`,
       );
     }
     const jsonSchema: LiteralJSONSchema<T> = {
-      // deno-lint-ignore no-explicit-any
-      type: <any> typeOfValue,
+      type: <any>typeOfValue,
       const: value,
     };
 
@@ -58,10 +51,7 @@ export class LiteralSchema<
     return new LiteralSchema(this.#type, property) as this;
   }
 
-  override validate(
-    toValidate: unknown,
-    key?: string,
-  ): Validation<T> {
+  override validate(toValidate: unknown, key?: string): Validation<T> {
     const errors: ValidationError[] = [];
 
     if (this.#property.isRequired || isDefined(toValidate)) {
@@ -108,7 +98,7 @@ export function literal<T extends string | number | undefined>(
   return new LiteralSchema(value);
 }
 
-function _isLiteral<T>(to: T): Validator {
+function _isLiteral(to: string | number | undefined): Validator {
   return (value: unknown, key?: string) => {
     if (value === to) {
       return;
