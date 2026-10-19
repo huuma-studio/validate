@@ -24,16 +24,18 @@ class UnionSchema<
 
 ## Methods
 
-Inherited from `BaseSchema`: `validate`, `parse`, `jsonSchema`, `isRequired`, `toString`.
+Overrides `BaseSchema`: `validate`, `isRequired`. Inherits `parse`, `jsonSchema`, and `toString`.
 
 > `UnionSchema` extends `BaseSchema` directly and has **no** `.custom()`, `.optional()`, or `.required()` methods. A union containing an optional member or a `nullish.undefined()` member is also optional, so enclosing object schemas omit that field from their JSON Schema `required` list. To accept `null`, include a `nullish.null()` member.
 
 ## Validation behavior
 
-1. The value, including `undefined`, is validated against each member schema. A member such as `string().optional()` accepts `undefined` itself; the union never accepts a value that no member accepts. Being optional only affects `isRequired()` and the JSON Schema `required` list.
-2. The **first** member that validates without errors wins — its `value` is returned.
-3. If no member passes, all members' errors are **flattened** and returned as the `errors` array. Members receive the union's `key`, so inside an object the errors name the field (e.g. `"id" is not type "number"`).
+1. For factory-created unions (or constructors using default options), the value, including `undefined`, is validated against member schemas in order until one passes. A member such as `string().optional()` accepts `undefined` itself; these unions never accept a value that no member accepts. A member's optional metadata affects the union's `isRequired()` and an enclosing object's JSON Schema `required` list, but does not bypass member validation.
+2. The **first** member that validates without errors wins — its `value` is returned and the remaining members are not run.
+3. If no member passes, all members' errors are **flattened** into the `errors` array, with exact duplicates (e.g. `"id" is required` from several members) reported once. An empty `union([])` fails every value with `"${key|"union"}" cannot match an empty union`. Members receive the union's `key`, so inside an object the errors name the field (e.g. `"id" is not type "number"`).
 4. A required union passes `undefined` to its members, which report their own validation errors if none accept it. `null` is always passed to the members and succeeds only if a member accepts it.
+
+**Constructor-only exception:** `new UnionSchema(members, { isRequired: false, validators: [] })` explicitly makes the union itself optional. It accepts `undefined` without running any members, even for an empty union. This differs from optionality inferred from members. The inferred value type still comes solely from the members, so this option does not add `undefined` to that type. Prefer the factory with an accepting member, such as `union([string(), nullish.undefined()])`.
 
 The `create(property)` method returns a new `UnionSchema` with the same member schemas but a different property — used internally; not part of the public fluent API.
 

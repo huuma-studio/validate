@@ -226,6 +226,7 @@ export type JSONSchema = {
   items?: JSONSchema | JSONSchema[];
   enum?: (string | number)[];
   anyOf?: JSONSchema[];
+  not?: JSONSchema;
   oneOf?: JSONSchema[];
   const?: unknown;
   format?: string;

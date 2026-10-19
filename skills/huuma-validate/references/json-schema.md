@@ -12,17 +12,18 @@ The JSON Schema is **cached at construction time** — it reflects the schema as
 
 ## Keyword coverage
 
-| Keyword      | Produced by                                       |
-| ------------ | ------------------------------------------------- |
-| `type`       | all schemas                                       |
-| `properties` | `ObjectSchema` (map of property jsonSchemas)      |
-| `required`   | `ObjectSchema` (keys whose schema `isRequired()`) |
-| `items`      | `ArraySchema` (single element schema)             |
-| `enum`       | `EnumSchema`                                      |
-| `anyOf`      | `UnionSchema` (member jsonSchemas)                |
-| `const`      | `LiteralSchema`                                   |
-| `format`     | `UrlSchema` (`"uri"`), `UuidSchema` (`"uuid"`)    |
-| `pattern`    | `UuidSchema` (regex source)                       |
+| Keyword      | Produced by                                             |
+| ------------ | ------------------------------------------------------- |
+| `type`       | all schemas except `UndefinedSchema` without `orNull()` |
+| `properties` | `ObjectSchema` (map of property jsonSchemas)            |
+| `required`   | `ObjectSchema` (keys whose schema `isRequired()`)       |
+| `items`      | `ArraySchema` (single element schema)                   |
+| `enum`       | `EnumSchema`                                            |
+| `anyOf`      | `UnionSchema` (member jsonSchemas)                      |
+| `not`        | `UndefinedSchema` (`{ not: {} }`, matches nothing)      |
+| `const`      | `LiteralSchema`                                         |
+| `format`     | `UrlSchema` (`"uri"`), `UuidSchema` (`"uuid"`)          |
+| `pattern`    | `UuidSchema` (regex source)                             |
 
 Constraints like `min`/`max`/`positive`/`negative`/`notEmpty`/`minLength`/`regex`/`http`/`protocol` are **runtime-only** and do **not** populate `minimum`/`maximum`/`pattern`/etc. in the JSON Schema. If you need full-fidelity JSON Schema, post-process or augment the output.
 

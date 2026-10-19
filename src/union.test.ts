@@ -300,3 +300,57 @@ test("Union Schema Validation: an undefined member makes the union optional", ()
   assert.deepEqual(schema.parse(undefined), undefined);
   assert.deepEqual(schema.isRequired(), false);
 });
+
+test("Union JSON Schema: an undefined member does not allow null", () => {
+  const schema = new UnionSchema([new StringSchema(), new UndefinedSchema()]);
+
+  assert.isDefined(schema.validate(null).errors);
+  assert.deepEqual(schema.jsonSchema(), {
+    anyOf: [{ type: "string" }, { not: {} }],
+  });
+});
+
+test("Union JSON Schema: an undefined-or-null member allows null", () => {
+  const schema = new UnionSchema([
+    new StringSchema(),
+    new UndefinedSchema().orNull(),
+  ]);
+
+  assert.deepEqual(schema.validate(null).errors, undefined);
+  assert.deepEqual(schema.jsonSchema(), {
+    anyOf: [{ type: "string" }, { type: "null" }],
+  });
+});
+
+test("Union Schema Validation: stops at the first passing member", () => {
+  let calls = 0;
+  const counting = new StringSchema().custom(() => {
+    calls++;
+    return undefined;
+  });
+  const schema = new UnionSchema([new StringSchema(), counting]);
+
+  assert.deepEqual(schema.parse("Huuma"), "Huuma");
+  assert.deepEqual(calls, 0);
+});
+
+test("Union Schema Validation: duplicate member errors are reported once", () => {
+  const schema = new UnionSchema([new StringSchema(), new NumberSchema()]);
+
+  assert.deepEqual(schema.validate(undefined, "id").errors, [
+    { message: '"id" is required' },
+    { message: '"id" is not type "string"' },
+    { message: '"id" is not type "number"' },
+  ]);
+});
+
+test("Union Schema Validation: an empty union fails with a message", () => {
+  const schema = new UnionSchema([]);
+
+  assert.deepEqual(schema.validate("hello", "id").errors, [
+    { message: '"id" cannot match an empty union' },
+  ]);
+  assert.deepEqual(schema.validate(undefined).errors, [
+    { message: '"union" cannot match an empty union' },
+  ]);
+});

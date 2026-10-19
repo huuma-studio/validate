@@ -27,8 +27,9 @@ export class UndefinedSchema<
       validators: [...validators],
       baseValidators: [allowNull ? _isUndefinedOrNull : _isUndefined],
     };
-    // TODO: Whats the correct way to handle undefined values in json schema?
-    super(type, { type: "null" }, property);
+    // JSON has no undefined value: absence is expressed by an object's
+    // `required` list, so any present value fails `{ not: {} }`.
+    super(type, allowNull ? { type: "null" } : { not: {} }, property);
     this.#property = property;
   }
 

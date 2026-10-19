@@ -2,7 +2,6 @@ import {
   type BaseProperty,
   BaseSchema,
   type Property,
-  required,
   type Schema,
   type Validation,
   type ValidationError,
@@ -18,7 +17,6 @@ export class UnionSchema<
   T extends ReadonlyArray<Schema<unknown>>,
 > extends BaseSchema<SchemaType<T[number]>, UnionJSONSchema<T>> {
   #schemas: T;
-  #property: BaseProperty;
 
   constructor(
     schemas: T,
@@ -36,11 +34,10 @@ export class UnionSchema<
     const property: BaseProperty = {
       isRequired,
       validators: [...validators],
-      baseValidators: [required(type)],
+      baseValidators: [],
     };
     super(type, jsonSchema, property);
     this.#schemas = schemas;
-    this.#property = property;
   }
 
   protected override create(property: Property): this {
@@ -58,39 +55,44 @@ export class UnionSchema<
     );
   }
 
-  validate(value: unknown, key?: string): Validation<SchemaType<T[number]>> {
-    const validations: Validation<unknown>[] = [];
+  /**
+   * Returns the value of the first member that accepts it. When no member
+   * does, returns every distinct member error.
+   */
+  override validate(
+    value: unknown,
+    key?: string,
+  ): Validation<SchemaType<T[number]>> {
+    if (this.isSkipped(value)) {
+      return { value: <SchemaType<T[number]>>value, errors: undefined };
+    }
 
-    if (!this.isSkipped(value)) {
-      for (const schema of this.#schemas) {
-        if (schema instanceof BaseSchema) {
-          validations.push(schema.validate(value, key));
+    if (!this.#schemas.length) {
+      return {
+        value: undefined,
+        errors: [
+          { message: `"${key || "union"}" cannot match an empty union` },
+        ],
+      };
+    }
+
+    const errors: ValidationError[] = [];
+    for (const schema of this.#schemas) {
+      const validation = schema.validate(value, key);
+      if (!validation.errors?.length) {
+        return {
+          value: <SchemaType<T[number]>>validation.value,
+          errors: undefined,
+        };
+      }
+      for (const error of validation.errors) {
+        if (!errors.some(({ message }) => message === error.message)) {
+          errors.push(error);
         }
       }
     }
 
-    const passedValidations = validations.filter((v) => !v.errors?.length);
-    const failedValidations = validations.filter((v) => v.errors?.length);
-
-    if (
-      // At least 1 validation passes
-      passedValidations.length ||
-      // If optional no failed validations is valid
-      (!this.#property.isRequired && failedValidations.length === 0)
-    ) {
-      return {
-        value: <SchemaType<T[number]>>passedValidations.shift()?.value,
-        errors: undefined,
-      };
-    }
-
-    return {
-      value: undefined,
-      errors: <ValidationError[]>validations
-        .filter((v) => v.errors?.length)
-        .map((e) => e.errors)
-        .flat(),
-    };
+    return { value: undefined, errors };
   }
 }
 

@@ -62,7 +62,7 @@ nullish.undefined().orNull().validate(null); // { value: null, errors: undefined
 nullish.undefined().validate("x");        // errors: is not "undefined"
 ```
 
-JSON Schema: `{ type: "null" }` (a known limitation — the library does not model `undefined` in JSON Schema; a TODO exists in source).
+JSON Schema: `{ not: {} }`, which no JSON value matches — JSON has no `undefined`, so absence is expressed by leaving the field out of an object's `required` list. With `.orNull()` it is `{ type: "null" }`. In a `union`, the `{ not: {} }` entry adds nothing to `anyOf`, so `union([string(), nullish.undefined()])` does not claim to accept `null`.
 
 ## UnknownSchema
 

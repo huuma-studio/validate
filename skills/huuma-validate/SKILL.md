@@ -93,7 +93,7 @@ Factory-first. Use the factory, not `new` (see the "⚠️ Always prefer the fac
 - **`literal(value)`** — strict `===` to a single string/number literal. Constructor throws for non-string/number.
 - **`url()`** — URL strings via `new URL()`; `.http(secure?)` and `.protocol(p)`.
 - **`uuid(version?)`** — UUID strings; pass `"1"`/`"4"` for a specific version (e.g. `uuid("4")`), omit for any version. No need for the constructor.
-- **`union([...])`** — OR of member schemas; first passing member wins; errors flattened on full failure. No `.optional()`/`.custom()`.
+- **`union([...])`** — OR of member schemas; first passing member wins; distinct member errors flattened on full failure. No `.optional()`/`.custom()`.
 - **`nullish.null()`** / **`nullish.undefined()`** (`.orNull()`) / **`unknown()`** — degenerate/special-case schemas. `unknown()` always passes. `nil()` and `undef()` are deprecated aliases.
 
 ## Huuma/Route integration

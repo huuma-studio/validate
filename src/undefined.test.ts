@@ -69,3 +69,10 @@ test("Undefined Schema Validation: 'custom key'", () => {
     notUndefinedWithKeyMessage,
   ]);
 });
+
+test("Undefined JSON Schema: undefined has no JSON value", () => {
+  assert.deepEqual(new UndefinedSchema().jsonSchema(), { not: {} });
+  assert.deepEqual(new UndefinedSchema().orNull().jsonSchema(), {
+    type: "null",
+  });
+});
