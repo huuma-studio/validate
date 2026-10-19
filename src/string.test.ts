@@ -716,6 +716,50 @@ test("String Schema Validation: 'endsWith' astral characters (surrogate pairs)",
   );
 });
 
+test("String Schema Validation: 'startsWith'/'endsWith' reject look-alike objects", () => {
+  const startsWith = new StringSchema().startsWith("Ca");
+  const endsWith = new StringSchema().endsWith("go");
+  // Untrusted input carrying its own methods must never be called.
+  const lookAlike = {
+    startsWith: () => true,
+    endsWith: () => true,
+    length: 5,
+    0: "C",
+    1: "a",
+  };
+
+  assert.includeDeepMembers(startsWith.validate(lookAlike).errors!, [
+    startsWithMessage,
+  ]);
+  assert.includeDeepMembers(endsWith.validate(lookAlike).errors!, [
+    endsWithMessage,
+  ]);
+  assert.includeDeepMembers(startsWith.validate(new String("Cargo")).errors!, [
+    startsWithMessage,
+  ]);
+  assert.includeDeepMembers(endsWith.validate(new String("Cargo")).errors!, [
+    endsWithMessage,
+  ]);
+});
+
+test("String Schema Validation: 'startsWith'/'endsWith' ignore Object.prototype pollution", () => {
+  const schema = new StringSchema().startsWith("Ca").endsWith("go");
+  const polluted = Object.prototype as Record<string, unknown>;
+  polluted.startsWith = () => true;
+  polluted.endsWith = () => true;
+
+  try {
+    assert.deepEqual(schema.validate("Nope").errors, [
+      startsWithMessage,
+      endsWithMessage,
+    ]);
+    assert.deepEqual(schema.validate("Cargo").errors, undefined);
+  } finally {
+    delete polluted.startsWith;
+    delete polluted.endsWith;
+  }
+});
+
 test("String Schema Validation: 'regex'", () => {
   const regex = new StringSchema().regex(/^[a-z]+$/g);
 
