@@ -172,6 +172,9 @@ export function isUndefined(value: unknown): boolean {
   return !isDefined(value);
 }
 
+/** @deprecated Use {@link isUndefined} instead. */
+export const isNotDefined: typeof isUndefined = isUndefined;
+
 /**
  * Returns whether a value is present.
  *

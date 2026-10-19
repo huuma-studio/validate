@@ -48,13 +48,13 @@ export class UnionSchema<
     return new UnionSchema(this.#schemas, property) as this;
   }
 
-  validate(value: unknown): Validation<SchemaType<T[number]>> {
+  validate(value: unknown, key?: string): Validation<SchemaType<T[number]>> {
     const validations: Validation<unknown>[] = [];
 
     if (this.#property.isRequired || isDefined(value)) {
       for (const schema of this.#schemas) {
         if (schema instanceof BaseSchema) {
-          validations.push(schema.validate(value));
+          validations.push(schema.validate(value, key));
         }
       }
     }

@@ -148,3 +148,21 @@ describe("UUID Schema Validation: 'uuid()' factory", () => {
     assert.deepEqual(uuidSchema.validate(uuid4).errors, undefined);
   });
 });
+
+describe("UUID JSON Schema: pattern accepts lowercase UUIDs", () => {
+  const cases = [
+    [undefined, uuid4],
+    ["all", uuid1],
+    ["1", uuid1],
+    ["4", uuid4],
+  ] as const;
+
+  for (const [version, value] of cases) {
+    test(`version ${version ?? "default"}`, () => {
+      const pattern = new RegExp(uuid(version).jsonSchema().pattern);
+
+      assert.isTrue(pattern.test(value));
+      assert.isTrue(pattern.test(value.toUpperCase()));
+    });
+  }
+});

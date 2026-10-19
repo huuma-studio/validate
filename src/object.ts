@@ -118,22 +118,21 @@ export class ObjectSchema<T> extends BaseSchema<
     const errors: ValidationError[] = [];
     let schemaType: Record<string, unknown> | undefined = undefined;
     if (this.#property.isRequired || isDefined(toValidate)) {
-      const validators = [
-        ...this.#property.baseValidators,
-        ...this.#property.validators,
-      ];
-      schemaType = {};
-      for (const validator of validators) {
+      for (const validator of this.#property.baseValidators) {
         const result = validator(toValidate, key);
         if (result) errors.push(result);
       }
+      // Child errors are noise when the value itself is not an object
+      if (errors.length) {
+        return { value: undefined, errors };
+      }
+      for (const validator of this.#property.validators) {
+        const result = validator(toValidate, key);
+        if (result) errors.push(result);
+      }
+      schemaType = {};
       for (const key in this.#schema) {
-        const toPush =
-          isDefined(toValidate) &&
-          typeof toValidate !== "function" &&
-          toValidate !== null
-            ? (<Keyable>toValidate)[key]
-            : undefined;
+        const toPush = (<Keyable>toValidate)[key];
 
         const { value, errors: validationErrors } = (<Schema<unknown>>(
           this.#schema[key]

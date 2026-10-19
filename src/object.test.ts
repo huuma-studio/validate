@@ -3,6 +3,7 @@ import { object } from "./object.ts";
 import { string } from "./string.ts";
 import { number } from "./number.ts";
 import { union } from "./union.ts";
+import { undef } from "./undefined.ts";
 
 test("Object JSON Schema: union fields accepting undefined are not required", () => {
   const optionalName = union([string().optional(), number()]);
@@ -219,4 +220,18 @@ test("Object Schema Validation: 'optional'", () => {
   assert.includeDeepMembers(optional.validate(() => {}).errors!, [
     notObjectMessage,
   ]);
+});
+
+test("Object JSON Schema: union fields with an undefined member are not required", () => {
+  const schema = object({ name: union([string(), undef()]) });
+
+  assert.deepEqual(schema.parse({}), { name: undefined });
+  assert.deepEqual(schema.jsonSchema().required, []);
+});
+
+test("Object Schema Validation: a non-object value does not validate children", () => {
+  const schema = object({ name: string(), age: number() }).optional();
+
+  assert.deepEqual(schema.validate(null).errors, [notObjectMessage]);
+  assert.deepEqual(schema.validate("Cargo").errors, [notObjectMessage]);
 });

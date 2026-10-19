@@ -3,6 +3,7 @@ import { StringSchema } from "./string.ts";
 import { NumberSchema } from "./number.ts";
 import { BooleanSchema } from "./boolean.ts";
 import { UnionSchema } from "./union.ts";
+import { UndefinedSchema } from "./undefined.ts";
 test("Union JSON Schema: overlapping members use anyOf", () => {
   const schema = new UnionSchema([new StringSchema(), new StringSchema()]);
 
@@ -266,4 +267,20 @@ test("Union Schema Validation: broken schema", () => {
       },
     ]);
   });
+});
+
+test("Union Schema Validation: member errors use the key passed in", () => {
+  const schema = new UnionSchema([new StringSchema(), new NumberSchema()]);
+
+  assert.deepEqual(schema.validate(true, "id").errors, [
+    { message: '"id" is not type "string"' },
+    { message: '"id" is not type "number"' },
+  ]);
+});
+
+test("Union Schema Validation: an undefined member makes the union optional", () => {
+  const schema = new UnionSchema([new StringSchema(), new UndefinedSchema()]);
+
+  assert.deepEqual(schema.parse(undefined), undefined);
+  assert.deepEqual(schema.isRequired(), false);
 });

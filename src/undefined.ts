@@ -16,7 +16,7 @@ export class UndefinedSchema<
   #property: BaseProperty;
   constructor(
     { isRequired, validators, allowNull }: UndefinedProperty = {
-      isRequired: true,
+      isRequired: false,
       validators: [],
       allowNull: false,
     },
