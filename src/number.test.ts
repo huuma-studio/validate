@@ -177,6 +177,7 @@ test("Number Schema Validation: 'positive'", () => {
   assert.includeDeepMembers(positive.validate(0).errors!, [
     isNotPositiveMessage,
   ]);
+  assert.deepEqual(positive.validate(0.5).errors, undefined); // > 0, not >= 1 — fractions pass
   assert.deepEqual(positive.validate(1).errors, undefined);
 
   assert.includeDeepMembers(positive.validate(NaN).errors!, [
