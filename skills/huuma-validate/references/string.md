@@ -48,7 +48,7 @@ The type check `_isString` runs first: if `typeof value !== "string"` → `"${ke
 
 ## Length semantics
 
-All length checks use **UTF-16 code units** (i.e. native `value.length`). Astral characters (surrogate pairs) count as **2**. `startsWith`/`endsWith` also walk UTF-16 code units via direct index access (safe against `String.prototype` pollution).
+All length checks use **UTF-16 code units** (i.e. native `value.length`). Astral characters (surrogate pairs) count as **2**. `startsWith`/`endsWith` call the native `String.prototype` methods after a `typeof value === "string"` check, so they compare UTF-16 code units too. Look-alike objects carrying their own `startsWith`/`endsWith` are rejected before any method is called, and `Object.prototype` pollution cannot change the result. They do not defend against code that overwrites `String.prototype` itself — no validator in the library does.
 
 ## Examples
 
