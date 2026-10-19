@@ -70,7 +70,35 @@ export abstract class BaseSchema<
     return this.create(property);
   }
 
-  abstract validate(value: unknown, key?: string): Validation<T>;
+  /**
+   * Runs the base validators, then the custom validators, and collects every
+   * error. Validation is skipped when the schema is optional and the value is
+   * absent.
+   */
+  validate(value: unknown, key?: string): Validation<T> {
+    if (this.isSkipped(value)) {
+      return { value: <T>value, errors: undefined };
+    }
+    return toValidation(<T>value, this.runValidators(value, key));
+  }
+
+  /** Whether validation is skipped because an optional value is absent. */
+  protected isSkipped(value: unknown): boolean {
+    return !this.#property.isRequired && isUndefined(value);
+  }
+
+  /** Runs the base validators, then the custom validators. */
+  protected runValidators(value: unknown, key?: string): ValidationError[] {
+    const errors: ValidationError[] = [];
+    for (const validator of [
+      ...this.#property.baseValidators,
+      ...this.#property.validators,
+    ]) {
+      const result = validator(value, key);
+      if (result) errors.push(result);
+    }
+    return errors;
+  }
 
   parse(value: unknown): T {
     const { value: validated, errors } = this.validate(value);
@@ -129,33 +157,17 @@ export abstract class PrimitiveSchema<
     };
     return <O>(<unknown>this.create(property));
   }
+}
 
-  validate(value: unknown, key?: string): Validation<T> {
-    const errors: ValidationError[] = [];
-
-    if (this.#property.isRequired || isDefined(value)) {
-      const validators = [
-        ...this.#property.baseValidators,
-        ...this.#property.validators,
-      ];
-      for (const validator of validators) {
-        const result = validator(value, key);
-        if (result) errors.push(result);
-      }
-    }
-
-    if (errors.length) {
-      return {
-        value: undefined,
-        errors,
-      };
-    }
-
-    return {
-      value: <T>value,
-      errors: undefined,
-    };
+/** Builds a validation result: `value` on success, `errors` otherwise. */
+export function toValidation<T>(
+  value: T,
+  errors: ValidationError[],
+): Validation<T> {
+  if (errors.length) {
+    return { value: undefined, errors };
   }
+  return { value, errors: undefined };
 }
 
 export function required(type: string): Validator {
@@ -201,9 +213,8 @@ export const jsonSchemaTypes = [
   "null",
 ] as const;
 
-// deno-lint-ignore no-explicit-any
-export function isJsonSchemaType(type: any): type is JSONSchemaTypes {
-  return jsonSchemaTypes.includes(type);
+export function isJsonSchemaType(type: unknown): type is JSONSchemaTypes {
+  return jsonSchemaTypes.includes(<JSONSchemaTypes>type);
 }
 
 export type JSONSchemaTypes = (typeof jsonSchemaTypes)[number];

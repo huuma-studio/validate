@@ -1,12 +1,9 @@
 import {
   type BaseProperty,
   BaseSchema,
-  isDefined,
   type Property,
   required,
   type RequiredType,
-  type Validation,
-  type ValidationError,
   type Validator,
 } from "./schema.ts";
 
@@ -58,32 +55,6 @@ export class EnumSchema<
       isRequired: false,
       validators: [...this.#property.validators],
     });
-  }
-
-  override validate(toValidate: unknown, key?: string): Validation<T> {
-    const errors: ValidationError[] = [];
-
-    if (this.#property.isRequired || isDefined(toValidate)) {
-      const validators = [
-        ...this.#property.baseValidators,
-        ...this.#property.validators,
-      ];
-      for (const validator of validators) {
-        const result = validator(toValidate, key);
-        if (result) {
-          errors.push(result);
-        }
-      }
-    }
-
-    if (errors.length) {
-      return { errors, value: undefined };
-    }
-
-    return {
-      value: toValidate as T,
-      errors: undefined,
-    };
   }
 }
 

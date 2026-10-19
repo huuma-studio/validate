@@ -1,10 +1,10 @@
 import {
   type BaseProperty,
   BaseSchema,
-  isDefined,
   type Property,
   required,
   type Schema,
+  toValidation,
   type Validation,
   type ValidationError,
 } from "./schema.ts";
@@ -32,8 +32,7 @@ export class ArraySchema<
     const type = "array";
     const jsonSchema: ArrayJSONSchema<T> = {
       type,
-      // deno-lint-ignore no-explicit-any
-      items: <any>schema.jsonSchema(),
+      items: <ArrayJSONSchema<T>["items"]>schema.jsonSchema(),
     };
 
     const property: BaseProperty = {
@@ -67,49 +66,33 @@ export class ArraySchema<
     toValidate: unknown,
     key?: string,
   ): Validation<T extends Schema<unknown> ? T["infer"][] : undefined> {
-    const errors: ValidationError[] = [];
-    let validatedItems: unknown[] | undefined;
-    if (this.#property.isRequired || isDefined(toValidate)) {
-      validatedItems = [];
-      const validators = [
-        ...this.#property.baseValidators,
-        ...this.#property.validators,
-      ];
-
-      for (const validator of validators) {
-        const result = validator(toValidate, key);
-        if (result) {
-          errors.push(result);
-        }
-      }
-      if (Array.isArray(toValidate)) {
-        for (const [index, entry] of <IterableIterator<[number, unknown]>>(
-          toValidate.entries()
-        )) {
-          const { value: validatedEntry, errors: validationErrors } =
-            this.schema.validate(entry, `array index ${index.toString()}`);
-          if (validationErrors?.length) {
-            errors.push(...validationErrors);
-          } else {
-            validatedItems.push(validatedEntry);
-          }
-        }
-      }
-    }
-
-    if (errors.length) {
+    if (this.isSkipped(toValidate)) {
       return {
-        value: undefined,
-        errors,
+        value: <T extends Schema<unknown> ? T["infer"][] : undefined>toValidate,
+        errors: undefined,
       };
     }
 
-    return {
-      value: <T extends Schema<unknown> ? T["infer"][] : undefined>(
-        validatedItems
-      ),
-      errors: undefined,
-    };
+    const errors = this.runValidators(toValidate, key);
+    const validatedItems: unknown[] = [];
+    if (Array.isArray(toValidate)) {
+      for (const [index, entry] of <IterableIterator<[number, unknown]>>(
+        toValidate.entries()
+      )) {
+        const { value: validatedEntry, errors: validationErrors } =
+          this.schema.validate(entry, `array index ${index.toString()}`);
+        if (validationErrors?.length) {
+          errors.push(...validationErrors);
+        } else {
+          validatedItems.push(validatedEntry);
+        }
+      }
+    }
+
+    return toValidation(
+      <T extends Schema<unknown> ? T["infer"][] : undefined>validatedItems,
+      errors,
+    );
   }
 }
 

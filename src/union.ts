@@ -1,7 +1,6 @@
 import {
   type BaseProperty,
   BaseSchema,
-  isDefined,
   type Property,
   required,
   type Schema,
@@ -51,7 +50,7 @@ export class UnionSchema<
   validate(value: unknown, key?: string): Validation<SchemaType<T[number]>> {
     const validations: Validation<unknown>[] = [];
 
-    if (this.#property.isRequired || isDefined(value)) {
+    if (!this.isSkipped(value)) {
       for (const schema of this.#schemas) {
         if (schema instanceof BaseSchema) {
           validations.push(schema.validate(value, key));

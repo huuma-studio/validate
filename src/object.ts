@@ -1,12 +1,12 @@
 import {
   type BaseProperty,
   BaseSchema,
-  isDefined,
   type JSONSchema,
   type Property,
   required,
   type RequiredType,
   type Schema,
+  toValidation,
   type Validation,
   type ValidationError,
 } from "./schema.ts";
@@ -115,47 +115,30 @@ export class ObjectSchema<T> extends BaseSchema<
   }
 
   validate(toValidate: unknown, key?: string): Validation<SchemaType<T>> {
-    const errors: ValidationError[] = [];
-    let schemaType: Record<string, unknown> | undefined = undefined;
-    if (this.#property.isRequired || isDefined(toValidate)) {
-      for (const validator of this.#property.baseValidators) {
-        const result = validator(toValidate, key);
-        if (result) errors.push(result);
-      }
-      // Child errors are noise when the value itself is not an object
-      if (errors.length) {
-        return { value: undefined, errors };
-      }
-      for (const validator of this.#property.validators) {
-        const result = validator(toValidate, key);
-        if (result) errors.push(result);
-      }
-      schemaType = {};
-      for (const key in this.#schema) {
-        const toPush = (<Keyable>toValidate)[key];
-
-        const { value, errors: validationErrors } = (<Schema<unknown>>(
-          this.#schema[key]
-        )).validate(toPush, key);
-
-        if (validationErrors?.length) {
-          errors.push(...validationErrors);
-          continue;
-        }
-        schemaType[key] = value;
-      }
-    }
-    if (errors.length) {
-      return {
-        value: undefined,
-        errors,
-      };
+    if (this.isSkipped(toValidate)) {
+      return { value: <SchemaType<T>>toValidate, errors: undefined };
     }
 
-    return {
-      value: <SchemaType<T>>schemaType,
-      errors: undefined,
-    };
+    const errors = this.runValidators(toValidate, key);
+    // Child errors are noise when the value itself is not an object
+    if (!_isValidObject(toValidate)) {
+      return { value: undefined, errors };
+    }
+
+    const schemaType: Record<string, unknown> = {};
+    for (const key in this.#schema) {
+      const { value, errors: validationErrors } = (<Schema<unknown>>(
+        this.#schema[key]
+      )).validate((<Keyable>toValidate)[key], key);
+
+      if (validationErrors?.length) {
+        errors.push(...validationErrors);
+        continue;
+      }
+      schemaType[key] = value;
+    }
+
+    return toValidation(<SchemaType<T>>schemaType, errors);
   }
 }
 
@@ -172,6 +155,6 @@ function _isObject(value: unknown, key?: string): ValidationError | undefined {
   return { message: `"${key || "object"}" not type "object"` };
 }
 
-function _isValidObject(value: unknown) {
+function _isValidObject(value: unknown): value is Keyable {
   return typeof value === "object" && !Array.isArray(value) && value !== null;
 }

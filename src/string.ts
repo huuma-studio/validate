@@ -134,43 +134,20 @@ function _isNotEquals(to: string): Validator {
 }
 
 function _startsWith(needle: string): Validator {
-  // Compare UTF-16 code units directly rather than dispatching through
-  // String.prototype.startsWith or RegExp.prototype.test, so prototype
-  // pollution cannot alter the check. `length` is a non-configurable own
-  // slot and in-range index access is resolved by the String exotic
-  // [[Get]], bypassing String.prototype. Matches the code-unit semantics
-  // of the native startsWith.
-  const nLen = needle.length;
   return (value: unknown, key?: string) => {
-    if (typeof value !== "string" || value.length < nLen) {
-      return _mismatch("start with", needle, key);
+    if (typeof value === "string" && value.startsWith(needle)) {
+      return;
     }
-    for (let i = 0; i < nLen; i++) {
-      if (needle[i] !== value[i]) {
-        return _mismatch("start with", needle, key);
-      }
-    }
-    return;
+    return _mismatch("start with", needle, key);
   };
 }
 
 function _endsWith(needle: string): Validator {
-  const nLen = needle.length;
   return (value: unknown, key?: string) => {
-    if (typeof value !== "string") {
-      return _mismatch("end with", needle, key);
+    if (typeof value === "string" && value.endsWith(needle)) {
+      return;
     }
-    const vLen = value.length;
-    if (vLen < nLen) {
-      return _mismatch("end with", needle, key);
-    }
-    const offset = vLen - nLen;
-    for (let i = 0; i < nLen; i++) {
-      if (needle[i] !== value[offset + i]) {
-        return _mismatch("end with", needle, key);
-      }
-    }
-    return;
+    return _mismatch("end with", needle, key);
   };
 }
 
