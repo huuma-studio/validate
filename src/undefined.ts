@@ -58,6 +58,7 @@ export class UndefinedSchema<
   }
 }
 
+/** @deprecated Use `nullish.undefined()` instead. */
 export function undef(): UndefinedSchema<undefined> {
   return new UndefinedSchema();
 }

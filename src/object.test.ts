@@ -3,7 +3,7 @@ import { object } from "./object.ts";
 import { string } from "./string.ts";
 import { number } from "./number.ts";
 import { union } from "./union.ts";
-import { undef } from "./undefined.ts";
+import { nullish } from "./mod.ts";
 
 test("Object JSON Schema: union fields accepting undefined are not required", () => {
   const optionalName = union([string().optional(), number()]);
@@ -223,7 +223,7 @@ test("Object Schema Validation: 'optional'", () => {
 });
 
 test("Object JSON Schema: union fields with an undefined member are not required", () => {
-  const schema = object({ name: union([string(), undef()]) });
+  const schema = object({ name: union([string(), nullish.undefined()]) });
 
   assert.deepEqual(schema.parse({}), { name: undefined });
   assert.deepEqual(schema.jsonSchema().required, []);

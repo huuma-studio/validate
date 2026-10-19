@@ -16,6 +16,7 @@
     "./union": "./src/union.ts",
     "./undefined": "./src/undefined.ts",
     "./null": "./src/null.ts",
+    "./nullish": "./src/nullish.ts",
     "./unknown": "./src/unknown.ts",
     "./middleware": "./src/middleware.ts"
   },

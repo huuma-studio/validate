@@ -50,12 +50,12 @@ There's no first-class "nullable". Only `undefined` is absent; `null` is a value
 
 ```typescript
 const profile = object({
-  nickname: union([string(), nil()]),         // string or null, must be present
-  avatar: union([url(), undef().orNull()]),   // url, null, or absent
+  nickname: union([string(), nullish.null()]),        // string or null, must be present
+  avatar: union([url(), nullish.undefined().orNull()]), // url, null, or absent
 });
 ```
 
-Include `nil()` in a `union` to accept `null`, and add `undef()` (or use `undef().orNull()`) to also allow the field to be absent.
+Include `nullish.null()` in a `union` to accept `null`, and add `nullish.undefined()` (or use `nullish.undefined().orNull()`) to also allow the field to be absent.
 
 ## Strict unknown-key rejection
 

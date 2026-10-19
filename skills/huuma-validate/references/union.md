@@ -26,7 +26,7 @@ class UnionSchema<
 
 Inherited from `BaseSchema`: `validate`, `parse`, `jsonSchema`, `isRequired`, `toString`.
 
-> `UnionSchema` extends `BaseSchema` directly and has **no** `.custom()`, `.optional()`, or `.required()` methods. A union containing an optional member or an `undef()` member is also optional, so enclosing object schemas omit that field from their JSON Schema `required` list. To accept `null`, include a `nil()` member.
+> `UnionSchema` extends `BaseSchema` directly and has **no** `.custom()`, `.optional()`, or `.required()` methods. A union containing an optional member or a `nullish.undefined()` member is also optional, so enclosing object schemas omit that field from their JSON Schema `required` list. To accept `null`, include a `nullish.null()` member.
 
 ## Validation behavior
 

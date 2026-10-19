@@ -52,28 +52,28 @@ For minimum bundle size, import individual modules (each validator is fully inde
 
 Every schema class has a lowercase **factory function** exported from the main entrypoint. **Use the factory functions — not `new *Schema(...)` constructors.** This is the strongly encouraged, idiomatic API. Constructors are an implementation detail and should be avoided in application code.
 
-| Schema            | Factory           | Example                            |
-| ----------------- | ----------------- | ---------------------------------- |
-| `StringSchema`    | `string()`        | `string().notEmpty().minLength(3)` |
-| `NumberSchema`    | `number()`        | `number().min(18)`                 |
-| `BooleanSchema`   | `boolean()`       | `boolean().true()`                 |
-| `ArraySchema`     | `array(schema)`   | `array(string().notEmpty())`       |
-| `ObjectSchema`    | `object({ ... })` | `object({ name: string() })`       |
-| `EnumSchema`      | `enums([...])`    | `enums(["admin", "user"])`         |
-| `LiteralSchema`   | `literal(value)`  | `literal("active")`                |
-| `UrlSchema`       | `url()`           | `url().http()`                     |
-| `UuidSchema`      | `uuid(version?)`  | `uuid("4")`, `uuid()`              |
-| `UnionSchema`     | `union([...])`    | `union([string(), number()])`      |
-| `NullSchema`      | `nil()`           | `nil()`                            |
-| `UndefinedSchema` | `undef()`         | `undef()`                          |
-| `UnknownSchema`   | `unknown()`       | `unknown()`                        |
+| Schema            | Factory               | Example                            |
+| ----------------- | --------------------- | ---------------------------------- |
+| `StringSchema`    | `string()`            | `string().notEmpty().minLength(3)` |
+| `NumberSchema`    | `number()`            | `number().min(18)`                 |
+| `BooleanSchema`   | `boolean()`           | `boolean().true()`                 |
+| `ArraySchema`     | `array(schema)`       | `array(string().notEmpty())`       |
+| `ObjectSchema`    | `object({ ... })`     | `object({ name: string() })`       |
+| `EnumSchema`      | `enums([...])`        | `enums(["admin", "user"])`         |
+| `LiteralSchema`   | `literal(value)`      | `literal("active")`                |
+| `UrlSchema`       | `url()`               | `url().http()`                     |
+| `UuidSchema`      | `uuid(version?)`      | `uuid("4")`, `uuid()`              |
+| `UnionSchema`     | `union([...])`        | `union([string(), number()])`      |
+| `NullSchema`      | `nullish.null()`      | `nullish.null()`                   |
+| `UndefinedSchema` | `nullish.undefined()` | `nullish.undefined().orNull()`     |
+| `UnknownSchema`   | `unknown()`           | `unknown()`                        |
 
 When in doubt, default to the factory. `uuid()` accepts an optional version (`"1"`, `"4"`, or omitted/`"all"`) so you never need the constructor — use `uuid("4")` instead of `new UuidSchema("4")`.
 
 ## Core mental model
 
 1. **Schemas are immutable.** Each constraint returns a _new_ instance. Don't mutate-then-read: `const s = string().notEmpty();`, not `s.notEmpty();` (and don't reach for `new StringSchema()` — use the factory).
-2. **Required by default.** `.optional()` allows `undefined` (the only "absent" value — validation is skipped). `null` is a value: it is validated like any other input and fails unless the schema accepts it (e.g. a `nil()` union member). `.required()` re-enforces presence. Optionality flows into the inferred TS type.
+2. **Required by default.** `.optional()` allows `undefined` (the only "absent" value — validation is skipped). `null` is a value: it is validated like any other input and fails unless the schema accepts it (e.g. a `nullish.null()` union member). `.required()` re-enforces presence. Optionality flows into the inferred TS type.
 3. **Two validation entry points:**
    - `schema.validate(input)` → `{ value, errors }`, never throws. Check `errors` for an array.
    - `schema.parse(input)` → returns `value`, throws `ValidationException` (with `.errors`) on failure.
@@ -94,7 +94,7 @@ Factory-first. Use the factory, not `new` (see the "⚠️ Always prefer the fac
 - **`url()`** — URL strings via `new URL()`; `.http(secure?)` and `.protocol(p)`.
 - **`uuid(version?)`** — UUID strings; pass `"1"`/`"4"` for a specific version (e.g. `uuid("4")`), omit for any version. No need for the constructor.
 - **`union([...])`** — OR of member schemas; first passing member wins; errors flattened on full failure. No `.optional()`/`.custom()`.
-- **`nil()`** / **`undef()`** (`.orNull()`) / **`unknown()`** — degenerate/special-case schemas. `unknown()` always passes.
+- **`nullish.null()`** / **`nullish.undefined()`** (`.orNull()`) / **`unknown()`** — degenerate/special-case schemas. `unknown()` always passes. `nil()` and `undef()` are deprecated aliases.
 
 ## Huuma/Route integration
 
@@ -125,7 +125,7 @@ Key points: `.optional()` widens to `T | undefined`; `.true()`/`.false()`/`liter
 - **Mutating instead of chaining** — constraint methods return new instances.
 - **Wrong class names** — `UrlSchema`/`UuidSchema`, not `URLSchema`/`UUIDSchema`.
 - **Expecting `.custom()` on `ObjectSchema`/`UnionSchema`** — only `PrimitiveSchema` subclasses have it.
-- **Expecting `.optional()` to accept `null`** — only `undefined` is absent. `string().optional().validate(null)` fails with `is not type "string"`. For nullable fields use `union([string(), nil()])`, or `undef().orNull()` for null-or-absent (see `references/usage-patterns.md`).
+- **Expecting `.optional()` to accept `null`** — only `undefined` is absent. `string().optional().validate(null)` fails with `is not type "string"`. For nullable fields use `union([string(), nullish.null()])`, or `nullish.undefined().orNull()` for null-or-absent (see `references/usage-patterns.md`).
 - **Expecting `ObjectSchema` to reject unknown keys** — it ignores/drops them. For strictness, validate the keyset separately (see `references/usage-patterns.md`).
 - **Using `parse()` without try/catch** — it throws `ValidationException` on any failure.
 - **Reading `schema.infer` as a value.** `infer` is a phantom type member; `schema.infer` is `undefined` at runtime. Extract the type with `typeof schema.infer`, never the value. See `references/type-inference.md`.

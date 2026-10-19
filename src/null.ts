@@ -43,6 +43,7 @@ export class NullSchema extends BaseSchema<null> {
   }
 }
 
+/** @deprecated Use `nullish.null()` instead. */
 export function nil(): NullSchema {
   return new NullSchema();
 }
