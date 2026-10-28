@@ -13,9 +13,9 @@ This module depends on `@huuma/route`. It is a separate subpath export — impor
 
 ## Middleware
 
-| Middleware | Signature | Validates |
-|------------|-----------|-----------|
-| `validateBody(schema)` | `(schema: Schema<unknown>): Middleware` | `ctx.body` |
+| Middleware               | Signature                               | Validates                          |
+| ------------------------ | --------------------------------------- | ---------------------------------- |
+| `validateBody(schema)`   | `(schema: Schema<unknown>): Middleware` | `ctx.body`                         |
 | `validateSearch(schema)` | `(schema: Schema<unknown>): Middleware` | `ctx.search` (search/query params) |
 
 A `Middleware` is `(ctx: RequestContext, next: Next) => Response | Promise<Response>` per `@huuma/route`.

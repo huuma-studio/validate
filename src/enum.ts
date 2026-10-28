@@ -1,12 +1,9 @@
 import {
   type BaseProperty,
   BaseSchema,
-  isDefined,
   type Property,
   required,
   type RequiredType,
-  type Validation,
-  type ValidationError,
   type Validator,
 } from "./schema.ts";
 
@@ -16,10 +13,7 @@ export type EnumJSONSchema<T> = {
 
 export class EnumSchema<
   T extends string | number | undefined,
-> extends BaseSchema<
-  T,
-  EnumJSONSchema<T>
-> {
+> extends BaseSchema<T, EnumJSONSchema<T>> {
   #enums: T[];
   #property: BaseProperty;
 
@@ -30,7 +24,7 @@ export class EnumSchema<
     const type = `enum:${enums.join(",")}`;
     const jsonSchema: EnumJSONSchema<T> = {
       enum: enums.map((e) => {
-        return <T> e;
+        return <T>e;
       }) as T extends undefined ? never : T[],
     };
 
@@ -62,35 +56,6 @@ export class EnumSchema<
       validators: [...this.#property.validators],
     });
   }
-
-  override validate(
-    toValidate: unknown,
-    key?: string,
-  ): Validation<T> {
-    const errors: ValidationError[] = [];
-
-    if (this.#property.isRequired || isDefined(toValidate)) {
-      const validators = [
-        ...this.#property.baseValidators,
-        ...this.#property.validators,
-      ];
-      for (const validator of validators) {
-        const result = validator(toValidate, key);
-        if (result) {
-          errors.push(result);
-        }
-      }
-    }
-
-    if (errors.length) {
-      return { errors, value: undefined };
-    }
-
-    return {
-      value: toValidate as T,
-      errors: undefined,
-    };
-  }
 }
 
 export function enums<T extends string | number | undefined>(
@@ -105,12 +70,17 @@ function _isEnum(values: unknown[]): Validator {
       return;
     }
 
+    // Objects may have missing, non-callable, or throwing coercion methods.
+    const valueLabel =
+      (typeof value === "object" && value !== null) ||
+      typeof value === "function"
+        ? typeof value
+        : String(value);
+
     return {
-      message: `"${key || "enum"}": ("${value}") is not one of ${
-        values
-          .map((value) => `"${value}"`)
-          .join(", ")
-      }`,
+      message: `"${key || "enum"}": ("${valueLabel}") is not one of ${values
+        .map((value) => `"${String(value)}"`)
+        .join(", ")}`,
     };
   };
 }

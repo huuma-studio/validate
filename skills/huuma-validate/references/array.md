@@ -25,12 +25,12 @@ class ArraySchema<T extends Schema<unknown> | undefined>
 
 ## Methods
 
-| Method | Signature | Behavior |
-|--------|-----------|----------|
-| `required()` | `(): ArraySchema<Exclude<T, undefined>>` | mark required, narrow type |
-| `optional()` | `(): ArraySchema<T \| undefined>` | mark optional |
-| `validate(value, key?)` | `(): Validation<T["infer"][]>` | validate whole array + each element |
-| `jsonSchema()` | `(): ArrayJSONSchema<T>` | `{ type: "array", items: <element jsonSchema> }` |
+| Method                  | Signature                                | Behavior                                         |
+| ----------------------- | ---------------------------------------- | ------------------------------------------------ |
+| `required()`            | `(): ArraySchema<Exclude<T, undefined>>` | mark required, narrow type                       |
+| `optional()`            | `(): ArraySchema<T \| undefined>`        | mark optional                                    |
+| `validate(value, key?)` | `(): Validation<T["infer"][]>`           | validate whole array + each element              |
+| `jsonSchema()`          | `(): ArrayJSONSchema<T>`                 | `{ type: "array", items: <element jsonSchema> }` |
 
 Inherited: `parse`, `isRequired`, `toString`.
 

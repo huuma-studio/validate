@@ -22,19 +22,21 @@ class BooleanSchema<T = boolean> extends PrimitiveSchema<T, BooleanSchema<Requir
 
 ## Methods
 
-| Method | Signature | Behavior | Error message |
-|--------|-----------|----------|---------------|
-| `true()` | `(): BooleanSchema<true>` | value `=== true` | `"${key\|"boolean"}" is not "true"` |
-| `false()` | `(): BooleanSchema<false>` | value `=== false` | `"${key\|"boolean"}" is not "false"` |
-| `custom(v)` | `(validator: Validator): this` | your check | your message |
-| `optional()` | `(): BooleanSchema<boolean\|undefined>` | — | — |
-| `required()` | `(): BooleanSchema<boolean>` | — | — |
+| Method       | Signature                                           | Behavior          | Error message                        |
+| ------------ | --------------------------------------------------- | ----------------- | ------------------------------------ |
+| `true()`     | `(): BooleanSchema<true \| Extract<T, undefined>>`  | value `=== true`  | `"${key\|"boolean"}" is not "true"`  |
+| `false()`    | `(): BooleanSchema<false \| Extract<T, undefined>>` | value `=== false` | `"${key\|"boolean"}" is not "false"` |
+| `custom(v)`  | `(validator: Validator): this`                      | your check        | your message                         |
+| `optional()` | `(): BooleanSchema<boolean\|undefined>`             | —                 | —                                    |
+| `required()` | `(): BooleanSchema<boolean>`                        | —                 | —                                    |
 
 ## Base validation
 
 `_isBoolean` checks `typeof value === "boolean"`. Anything else (`"true"` string, 0/1, null) → `"${key|"boolean"}" is not type "boolean"`. No coercion.
 
 `.true()` and `.false()` add an additional validator **after** the base type check, and the return type is narrowed so the inferred value is the literal `true` or `false` — useful for discriminated fields.
+
+Narrowing preserves optionality: `boolean().optional().true()` infers `true | undefined`, and `boolean().optional().false()` infers `false | undefined`.
 
 ## Examples
 

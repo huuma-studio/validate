@@ -4,17 +4,19 @@ Reference for `src/null.ts`, `src/undefined.ts`, `src/unknown.ts` — the degene
 
 ## ⚠️ Prefer the factories
 
-**Use the `nil()`, `undef()`, and `unknown()` factories — not `new NullSchema()` / `new UndefinedSchema()` / `new UnknownSchema()`.** The factories are the idiomatic, encouraged API; the constructors are implementation details.
+**Use the `nullish.null()`, `nullish.undefined()`, and `unknown()` factories — not `new NullSchema()` / `new UndefinedSchema()` / `new UnknownSchema()`.** The factories are the idiomatic, encouraged API; the constructors are implementation details.
 
 ```typescript
-import { nil, undef, unknown } from "jsr:@huuma/validate";            // ✅ preferred
-import { nil } from "jsr:@huuma/validate/null";                      // ✅ deep import
-import { undef } from "jsr:@huuma/validate/undefined";              // ✅ deep import
+import { nullish, unknown } from "jsr:@huuma/validate";              // ✅ preferred
+import { nullish } from "jsr:@huuma/validate/nullish";              // ✅ deep import
 import { unknown } from "jsr:@huuma/validate/unknown";              // ✅ deep import
+import { nil, undef } from "jsr:@huuma/validate";                    // ⚠️ deprecated — use nullish.null() / nullish.undefined()
 import { NullSchema, UndefinedSchema, UnknownSchema } from "jsr:@huuma/validate"; // ⚠️ constructors — avoid in app code
 ```
 
-`nil()` → `NullSchema`; `undef()` → `UndefinedSchema`; `unknown()` → `UnknownSchema`. None of these factories take arguments.
+`nullish.null()` → `NullSchema`; `nullish.undefined()` → `UndefinedSchema`; `unknown()` → `UnknownSchema`. None of these factories take arguments.
+
+`null` and `undefined` can't be used as top-level function names, so the `nullish` namespace exists to give these schemas their real names. The older `nil()` and `undef()` factories still work but are **deprecated**.
 
 ## NullSchema
 
@@ -29,9 +31,9 @@ Validates that the value is **exactly** `null`.
 - No `.optional()`/`.required()` fluent API (extends `BaseSchema` with `create` only). Required by default; an absent value fails with the same message (since absent ≠ `null`).
 
 ```typescript
-nil().validate(null);       // { value: null, errors: undefined }
-nil().validate(undefined);  // errors: [{ message: '"value" is not "null"' }]
-nil().validate(0);          // errors: [{ message: '"value" is not "null"' }]
+nullish.null().validate(null);       // { value: null, errors: undefined }
+nullish.null().validate(undefined);  // errors: [{ message: '"value" is not "null"' }]
+nullish.null().validate(0);          // errors: [{ message: '"value" is not "null"' }]
 ```
 
 JSON Schema: `{ type: "null" }`.
@@ -44,23 +46,23 @@ class UndefinedSchema<T extends null | undefined = undefined> extends BaseSchema
 
 Validates that the value is `undefined` (or `null`/`undefined` with `.orNull()`).
 
-| Method | Signature | Behavior |
-|--------|-----------|----------|
-| `orNull()` | `(): UndefinedSchema<null \| undefined>` | accept `null` **or** `undefined` |
-| `validate(value, key?)` | `(): Validation<T>` | run base validator |
+| Method                  | Signature                                | Behavior                         |
+| ----------------------- | ---------------------------------------- | -------------------------------- |
+| `orNull()`              | `(): UndefinedSchema<null \| undefined>` | accept `null` **or** `undefined` |
+| `validate(value, key?)` | `(): Validation<T>`                      | run base validator               |
 
 - Base check `_isUndefined`: `value === undefined`; failure → `"${key|"value"}" is not "undefined"`.
 - `.orNull()` swaps in `_isUndefinedOrNull`: `value == null` (covers both `null` and `undefined`); failure → `"${key|"value"}" is not "undefined" or "null"`.
-- No `.optional()`/`.required()` fluent methods. Required by default; required+absent is a *pass* here (absent means `undefined`, which is what we want).
+- No `.optional()`/`.required()` fluent methods. Not required: `isRequired()` is `false` (like `unknown()`), since absent is exactly what it accepts. A `nullish.undefined()` object property is left out of the JSON Schema `required` list, and a `union` with a `nullish.undefined()` member is optional.
 
 ```typescript
-undef().validate(undefined); // { value: undefined, errors: undefined }
-undef().validate(null);       // errors: is not "undefined"
-undef().orNull().validate(null); // { value: null, errors: undefined }
-undef().validate("x");        // errors: is not "undefined"
+nullish.undefined().validate(undefined); // { value: undefined, errors: undefined }
+nullish.undefined().validate(null);       // errors: is not "undefined"
+nullish.undefined().orNull().validate(null); // { value: null, errors: undefined }
+nullish.undefined().validate("x");        // errors: is not "undefined"
 ```
 
-JSON Schema: `{ type: "null" }` (a known limitation — the library does not model `undefined` in JSON Schema; a TODO exists in source).
+JSON Schema: `{ not: {} }`, which no JSON value matches — JSON has no `undefined`, so absence is expressed by leaving the field out of an object's `required` list. With `.orNull()` it is `{ type: "null" }`. In a `union`, the `{ not: {} }` entry adds nothing to `anyOf`, so `union([string(), nullish.undefined()])` does not claim to accept `null`.
 
 ## UnknownSchema
 
@@ -85,8 +87,8 @@ JSON Schema: `{ type: ["string","number","object","array","boolean","null"] }` �
 
 ## When to use
 
-- `nil()` — a field that must be explicitly `null` (rare; sometimes APIs distinguish absent vs null).
-- `undef()` — accept absence explicitly; `.orNull()` for nullable-absent fields.
+- `nullish.null()` — a field that must be explicitly `null` (rare; sometimes APIs distinguish absent vs null).
+- `nullish.undefined()` — accept absence explicitly; `.orNull()` for nullable-absent fields.
 - `unknown()` — opaque/passthrough fields where you don't want to enforce a shape but still want the value in the output.
 
-For typical "optional field" use cases, prefer `someSchema.optional()` over `undef()`.
+For typical "optional field" use cases, prefer `someSchema.optional()` over `nullish.undefined()`.

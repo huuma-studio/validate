@@ -1,6 +1,5 @@
-import { assertArrayIncludes } from "@std/assert/array-includes";
-import { assertEquals } from "@std/assert/equals";
-
+import { assert, test } from "vite-plus/test";
+import type { Property } from "./schema.ts";
 import { UndefinedSchema } from "./undefined.ts";
 
 const notUndefinedMessage = {
@@ -10,52 +9,81 @@ const notUndefinedWithKeyMessage = {
   message: '"myKey" is not "undefined"',
 };
 
-Deno.test("Undefined Schema Validation: 'toString'", () => {
+test("Undefined Schema Validation: 'toString'", () => {
   const isUndefined = new UndefinedSchema().toString();
-  assertEquals(isUndefined.toString(), "undefined");
+  assert.deepEqual(isUndefined.toString(), "undefined");
 });
 
-Deno.test("Undefined Schema Validation: 'isUndefined'", () => {
+test("Undefined Schema Validation: 'isUndefined'", () => {
   const isUndefined = new UndefinedSchema();
 
   // The schema requires undefined by default (unlike regular schemas that require non-undefined)
-  assertEquals(isUndefined.validate(undefined).errors, undefined);
+  assert.deepEqual(isUndefined.validate(undefined).errors, undefined);
 
   // All other values should fail as "not undefined"
-  assertArrayIncludes(isUndefined.validate(null).errors!, [
+  assert.includeDeepMembers(isUndefined.validate(null).errors!, [
     notUndefinedMessage,
   ]);
-  assertArrayIncludes(isUndefined.validate("").errors!, [notUndefinedMessage]);
-  assertArrayIncludes(isUndefined.validate("test").errors!, [
+  assert.includeDeepMembers(isUndefined.validate("").errors!, [
     notUndefinedMessage,
   ]);
-  assertArrayIncludes(isUndefined.validate(0).errors!, [notUndefinedMessage]);
-  assertArrayIncludes(isUndefined.validate(1).errors!, [notUndefinedMessage]);
-  assertArrayIncludes(isUndefined.validate(NaN).errors!, [notUndefinedMessage]);
-  assertArrayIncludes(isUndefined.validate(Infinity).errors!, [
+  assert.includeDeepMembers(isUndefined.validate("test").errors!, [
     notUndefinedMessage,
   ]);
-  assertArrayIncludes(isUndefined.validate(true).errors!, [
+  assert.includeDeepMembers(isUndefined.validate(0).errors!, [
     notUndefinedMessage,
   ]);
-  assertArrayIncludes(isUndefined.validate(false).errors!, [
+  assert.includeDeepMembers(isUndefined.validate(1).errors!, [
     notUndefinedMessage,
   ]);
-  assertArrayIncludes(isUndefined.validate({}).errors!, [notUndefinedMessage]);
-  assertArrayIncludes(isUndefined.validate([]).errors!, [notUndefinedMessage]);
-  assertArrayIncludes(isUndefined.validate(() => {}).errors!, [
+  assert.includeDeepMembers(isUndefined.validate(NaN).errors!, [
+    notUndefinedMessage,
+  ]);
+  assert.includeDeepMembers(isUndefined.validate(Infinity).errors!, [
+    notUndefinedMessage,
+  ]);
+  assert.includeDeepMembers(isUndefined.validate(true).errors!, [
+    notUndefinedMessage,
+  ]);
+  assert.includeDeepMembers(isUndefined.validate(false).errors!, [
+    notUndefinedMessage,
+  ]);
+  assert.includeDeepMembers(isUndefined.validate({}).errors!, [
+    notUndefinedMessage,
+  ]);
+  assert.includeDeepMembers(isUndefined.validate([]).errors!, [
+    notUndefinedMessage,
+  ]);
+  assert.includeDeepMembers(isUndefined.validate(() => {}).errors!, [
     notUndefinedMessage,
   ]);
 });
 
-Deno.test("Undefined Schema Validation: 'custom key'", () => {
+test("Undefined Schema Validation: 'custom key'", () => {
   const isUndefined = new UndefinedSchema();
 
   // Test with custom key
-  assertArrayIncludes(isUndefined.validate(null, "myKey").errors!, [
+  assert.includeDeepMembers(isUndefined.validate(null, "myKey").errors!, [
     notUndefinedWithKeyMessage,
   ]);
-  assertArrayIncludes(isUndefined.validate("test", "myKey").errors!, [
+  assert.includeDeepMembers(isUndefined.validate("test", "myKey").errors!, [
     notUndefinedWithKeyMessage,
   ]);
+});
+
+test("Undefined JSON Schema: undefined has no JSON value", () => {
+  assert.deepEqual(new UndefinedSchema().jsonSchema(), { not: {} });
+  assert.deepEqual(new UndefinedSchema().orNull().jsonSchema(), {
+    type: "null",
+  });
+});
+
+test("Undefined Schema: 'create' keeps 'orNull'", () => {
+  const orNull = new UndefinedSchema().orNull();
+  const created = (
+    orNull as unknown as { create(property: Property): typeof orNull }
+  ).create({ isRequired: false, validators: [] });
+
+  assert.deepEqual(created.validate(null).errors, undefined);
+  assert.deepEqual(created.jsonSchema(), { type: "null" });
 });

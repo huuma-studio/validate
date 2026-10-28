@@ -1,9 +1,7 @@
 import {
   type BaseProperty,
   BaseSchema,
-  isDefined,
   type Property,
-  required,
   type Schema,
   type Validation,
   type ValidationError,
@@ -12,18 +10,13 @@ import {
 type SchemaType<S> = S extends Schema<infer T> ? T : never;
 
 export type UnionJSONSchema<T extends ReadonlyArray<Schema<unknown>>> = {
-  oneOf: T extends Array<Schema<infer U>>
-    ? Array<ReturnType<T[number]["jsonSchema"]>>
-    : never;
+  anyOf: Array<ReturnType<T[number]["jsonSchema"]>>;
 };
 
 export class UnionSchema<
-  T extends ReadonlyArray<
-    T[number] extends Schema<unknown> ? T[number] : never
-  >,
+  T extends ReadonlyArray<Schema<unknown>>,
 > extends BaseSchema<SchemaType<T[number]>, UnionJSONSchema<T>> {
   #schemas: T;
-  #property: BaseProperty;
 
   constructor(
     schemas: T,
@@ -31,72 +24,82 @@ export class UnionSchema<
   ) {
     const type = `union:${schemas.map((s) => s?.toString()).join(",")}`;
     const jsonSchema: UnionJSONSchema<T> = {
-      oneOf: schemas.map((s) => {
+      anyOf: schemas.map((s) => {
         if (s instanceof BaseSchema) {
           return s.jsonSchema();
         }
         throw Error("Schema not supported");
-        // deno-lint-ignore no-explicit-any
-      }) as any,
+      }) as UnionJSONSchema<T>["anyOf"],
     };
     const property: BaseProperty = {
       isRequired,
       validators: [...validators],
-      baseValidators: [required(type)],
+      baseValidators: [],
     };
-    super(
-      type,
-      jsonSchema,
-      property,
-    );
+    super(type, jsonSchema, property);
     this.#schemas = schemas;
-    this.#property = property;
   }
 
   protected override create(property: Property): this {
     return new UnionSchema(this.#schemas, property) as this;
   }
 
-  validate(value: unknown): Validation<SchemaType<T[number]>> {
-    const validations: Validation<unknown>[] = [];
+  /**
+   * The union is required unless it or one of its members is optional. Only
+   * the union's own flag skips validation; members always decide for
+   * themselves whether they accept `undefined`.
+   */
+  override isRequired(): boolean {
+    return (
+      super.isRequired() && this.#schemas.every((schema) => schema.isRequired())
+    );
+  }
 
-    if (this.#property.isRequired || isDefined(value)) {
-      for (const schema of this.#schemas) {
-        if (schema instanceof BaseSchema) {
-          validations.push(schema.validate(value));
+  /**
+   * Returns the value of the first member that accepts it. When no member
+   * does, returns every distinct member error.
+   */
+  override validate(
+    value: unknown,
+    key?: string,
+  ): Validation<SchemaType<T[number]>> {
+    if (this.isSkipped(value)) {
+      return { value: <SchemaType<T[number]>>value, errors: undefined };
+    }
+
+    if (!this.#schemas.length) {
+      return {
+        value: undefined,
+        errors: [
+          { message: `"${key || "union"}" cannot match an empty union` },
+        ],
+      };
+    }
+
+    const errors: ValidationError[] = [];
+    const seen = new Set<string>();
+    for (const schema of this.#schemas) {
+      const validation = schema.validate(value, key);
+      if (!validation.errors?.length) {
+        return {
+          value: <SchemaType<T[number]>>validation.value,
+          errors: undefined,
+        };
+      }
+      for (const error of validation.errors) {
+        if (!seen.has(error.message)) {
+          seen.add(error.message);
+          errors.push(error);
         }
       }
     }
 
-    const passedValidations = validations.filter((v) => !v.errors?.length);
-    const failedValidations = validations.filter((v) => v.errors?.length);
-
-    if (
-      // At least 1 validation passes
-      passedValidations.length ||
-      // If optional no failed validations is valid
-      (!this.#property.isRequired && failedValidations.length === 0)
-    ) {
-      return {
-        value: <SchemaType<T[number]>> passedValidations.shift()?.value,
-        errors: undefined,
-      };
-    }
-
-    return {
-      value: undefined,
-      errors: <ValidationError[]> validations
-        .filter((v) => v.errors?.length)
-        .map((e) => e.errors)
-        .flat(),
-    };
+    return { value: undefined, errors };
   }
 }
 
-export function union<
-  T extends ReadonlyArray<
-    T[number] extends Schema<unknown> ? T[number] : never
-  >,
->(schemas: T): UnionSchema<T> {
+export function union<T extends ReadonlyArray<Schema<unknown>>>(
+  schemas: T,
+): UnionSchema<T> {
   return new UnionSchema(schemas);
 }

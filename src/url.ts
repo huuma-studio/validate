@@ -77,18 +77,19 @@ function _isHttp(secure: boolean): Validator {
       return;
     }
     return {
-      message: `"${key || "url"}" is not of protocol type "${
-        allowed.join(
-          `" or "`,
-        )
-      }"`,
+      message: `"${key || "url"}" is not of protocol type "${allowed.join(
+        `" or "`,
+      )}"`,
     };
   };
 }
 
 function _parseUrl(value: unknown): URL | undefined {
+  if (typeof value !== "string") {
+    return;
+  }
   try {
-    return new URL(<string> value);
+    return new URL(value);
   } catch {
     return;
   }

@@ -22,12 +22,12 @@ class EnumSchema<T extends string | number | undefined> extends BaseSchema<T, En
 
 ## Methods
 
-| Method | Signature | Behavior |
-|--------|-----------|----------|
-| `required()` | `(): EnumSchema<Exclude<T, undefined>>` | mark required |
-| `optional()` | `(): EnumSchema<T \| undefined>` | mark optional |
-| `validate(value, key?)` | `(): Validation<T>` | run base + custom validators |
-| `jsonSchema()` | `(): EnumJSONSchema<T>` | `{ enum: [...members] }` |
+| Method                  | Signature                               | Behavior                     |
+| ----------------------- | --------------------------------------- | ---------------------------- |
+| `required()`            | `(): EnumSchema<Exclude<T, undefined>>` | mark required                |
+| `optional()`            | `(): EnumSchema<T \| undefined>`        | mark optional                |
+| `validate(value, key?)` | `(): Validation<T>`                     | run base + custom validators |
+| `jsonSchema()`          | `(): EnumJSONSchema<T>`                 | `{ enum: [...members] }`     |
 
 Inherited: `parse`, `isRequired`, `toString`, `custom` (via `BaseSchema`? — **no**; `EnumSchema` extends `BaseSchema` directly and does **not** expose `.custom()`).
 
@@ -40,6 +40,8 @@ Inherited: `parse`, `isRequired`, `toString`, `custom` (via `BaseSchema`? — **
    `"${key|"enum"}": ("${value}") is not one of "a", "b", "c"` (members joined with `, `).
 
 Membership uses `Array.prototype.includes` strict equality — no coercion. `enums([0,1]).validate(false)` fails because `0 === false` is false.
+
+Error messages display rejected objects and functions by their type, without invoking their coercion methods. Invalid objects and symbols return validation errors rather than throwing during message formatting.
 
 ## Examples
 

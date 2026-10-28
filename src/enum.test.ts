@@ -1,40 +1,72 @@
-import { assertEquals } from "@std/assert/equals";
+import { assert, describe, test } from "vite-plus/test";
 import { enums, EnumSchema } from "./enum.ts";
-import { assertThrows } from "@std/assert";
 import { ValidationException } from "./schema.ts";
 
-Deno.test(EnumSchema.name, async (t) => {
-  await t.step("should return correct toString value (strings)", () => {
+test("Enum Schema Validation: rejects an object with a non-callable toString without throwing", () => {
+  const schema = enums(["admin", "user"]);
+  const value = { toString: 0 };
+  const result = schema.validate(value);
+
+  assert(result.errors?.length);
+  assert.deepEqual(result.value, undefined);
+  assert.deepEqual(typeof result.errors[0].message, "string");
+  assert.throws(() => schema.parse(value), ValidationException);
+});
+
+test("Enum Schema Validation: rejects an object without a prototype without throwing", () => {
+  const schema = enums(["admin", "user"]);
+  const value = Object.create(null);
+  const result = schema.validate(value);
+
+  assert(result.errors?.length);
+  assert.deepEqual(result.value, undefined);
+  assert.deepEqual(typeof result.errors[0].message, "string");
+  assert.throws(() => schema.parse(value), ValidationException);
+});
+
+test("Enum Schema Validation: rejects a symbol without throwing", () => {
+  const schema = enums(["admin", "user"]);
+  const value = Symbol("invalid");
+  const result = schema.validate(value);
+
+  assert(result.errors?.length);
+  assert.deepEqual(result.value, undefined);
+  assert.deepEqual(typeof result.errors[0].message, "string");
+  assert.throws(() => schema.parse(value), ValidationException);
+});
+
+describe(EnumSchema.name, () => {
+  test("should return correct toString value (strings)", () => {
     const enumSchema = enums(["a", "b", "c"]);
-    assertEquals(enumSchema.toString(), "enum:a,b,c");
+    assert.deepEqual(enumSchema.toString(), "enum:a,b,c");
   });
 
-  await t.step("should parse string enum", () => {
+  test("should parse string enum", () => {
     const enumSchema = enums(["a", "b", "c"]);
-    assertEquals(enumSchema.parse("a"), "a");
+    assert.deepEqual(enumSchema.parse("a"), "a");
   });
 
-  await t.step("should return correct toString value (numbers)", () => {
+  test("should return correct toString value (numbers)", () => {
     const enumSchema = enums([1, 2, 3]);
-    assertEquals(enumSchema.toString(), "enum:1,2,3");
+    assert.deepEqual(enumSchema.toString(), "enum:1,2,3");
   });
 
-  await t.step("should parse number enum", () => {
+  test("should parse number enum", () => {
     const enumSchema = enums([1, 2, 3]);
 
-    assertEquals(enumSchema.validate(1).value, 1);
-    assertEquals(enumSchema.validate(2).value, 2);
-    assertEquals(enumSchema.parse(3), 3);
+    assert.deepEqual(enumSchema.validate(1).value, 1);
+    assert.deepEqual(enumSchema.validate(2).value, 2);
+    assert.deepEqual(enumSchema.parse(3), 3);
   });
 
-  await t.step("should parse number enum and undefined", () => {
+  test("should parse number enum and undefined", () => {
     const enumSchema = enums([1, 2, 3]).optional();
 
-    assertEquals(enumSchema.validate(1).value, 1);
-    assertEquals(enumSchema.validate(2).value, 2);
-    assertEquals(enumSchema.parse(3), 3);
-    assertEquals(enumSchema.parse(undefined), undefined);
+    assert.deepEqual(enumSchema.validate(1).value, 1);
+    assert.deepEqual(enumSchema.validate(2).value, 2);
+    assert.deepEqual(enumSchema.parse(3), 3);
+    assert.deepEqual(enumSchema.parse(undefined), undefined);
 
-    assertThrows(() => enumSchema.parse("invalid"), ValidationException);
+    assert.throws(() => enumSchema.parse("invalid"), ValidationException);
   });
 });
