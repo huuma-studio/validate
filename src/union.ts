@@ -77,6 +77,7 @@ export class UnionSchema<
     }
 
     const errors: ValidationError[] = [];
+    const seen = new Set<string>();
     for (const schema of this.#schemas) {
       const validation = schema.validate(value, key);
       if (!validation.errors?.length) {
@@ -86,7 +87,8 @@ export class UnionSchema<
         };
       }
       for (const error of validation.errors) {
-        if (!errors.some(({ message }) => message === error.message)) {
+        if (!seen.has(error.message)) {
+          seen.add(error.message);
           errors.push(error);
         }
       }
